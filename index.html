@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OptiScan AI — Intelligent Ocular Screening</title>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            medical: {
+              50: '#F0F9FF',
+              100: '#E0F2FE',
+              200: '#BAE6FD',
+              300: '#7DD3FC',
+              400: '#38BDF8',
+              500: '#0EA5E9',
+              600: '#0284C7', /* Primary Medical Teal/Blue */
+              700: '#0369A1',
+              800: '#075985',
+              900: '#0C4A6E',
+            },
+            mint: {
+              50: '#ECFDF5',
+              100: '#D1FAE5',
+              500: '#10B981',
+              600: '#059669',
+            }
+          },
+          animation: {
+            'scan': 'scanLine 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+            'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            scanLine: {
+              '0%, 100%': { top: '0%' },
+              '50%': { top: '96%' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Laser Scanner Beam Effect */
+    .scan-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #38BDF8, #0284C7, #38BDF8, transparent);
+      box-shadow: 0 0 16px 3px rgba(56, 189, 248, 0.8), 0 0 30px 6px rgba(2, 132, 199, 0.4);
+      z-index: 20;
+    }
+
+    /* Subtle backdrop grid for clean medical lab vibe */
+    .medical-bg-pattern {
+      background-color: #F8FAFC;
+      background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="medical-bg-pattern min-h-screen text-slate-800 font-sans flex flex-col justify-between antialiased selection:bg-medical-100 selection:text-medical-800">
+
+  <!-- ================= HEADER / NAVBAR ================= -->
+  <header class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 transition-all">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <!-- Logo + Brand -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-medical-600 to-medical-400 flex items-center justify-center text-white shadow-md shadow-medical-500/20">
+          <i data-lucide="scan-eye" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-lg text-slate-900 tracking-tight">OptiScan<span class="text-medical-600">AI</span></span>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-medical-50 text-medical-700 border border-medical-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-medical-500 mr-1.5 animate-pulse"></span>
+              v2.4 Clin-Grade
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 hidden sm:block -mt-0.5">Ocular Deep-Learning Diagnostics</p>
+        </div>
+      </div>
+
+      <!-- Status Badge -->
+      <div class="flex items-center space-x-3">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+          <i data-lucide="activity" class="w-3.5 h-3.5 mr-1.5 text-emerald-500"></i>
+          AI-Assisted Screening
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col items-center">
+    
+    <!-- Hero Section -->
+    <div class="text-center max-w-xl mx-auto mb-8 sm:mb-10">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-medical-50 text-medical-700 border border-medical-200 mb-3 shadow-xs">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-medical-600"></i>
+        Automated Computer Vision Screening
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+        Instant AI Eye Screening
+      </h1>
+      <p class="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed">
+        Upload a clear close-up photograph of the anterior eye or a fundus retinal scan to detect common pathologies within seconds.
+      </p>
+    </div>
+
+    <!-- Main Card Container -->
+    <div class="w-full bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl shadow-slate-200/50 transition-all duration-300">
+      
+      <!-- Interactive Upload Drop Zone -->
+      <div 
+        id="dropZone" 
+        class="relative border-2 border-dashed border-slate-300 hover:border-medical-500 rounded-2xl p-6 sm:p-8 text-center transition-all duration-200 bg-slate-50/60 hover:bg-medical-50/30 cursor-pointer group flex flex-col items-center justify-center min-h-[290px] overflow-hidden"
+      >
+        <!-- Hidden File Input (supports desktop picker and mobile camera) -->
+        <input 
+          type="file" 
+          id="fileInput" 
+          accept="image/*" 
+          capture="environment"
+          class="hidden" 
+        />
+
+        <!-- Empty State UI -->
+        <div id="uploadPrompt" class="flex flex-col items-center justify-center space-y-4">
+          <div class="w-16 h-16 rounded-2xl bg-white shadow-md border border-slate-200 flex items-center justify-center text-medical-600 group-hover:scale-105 group-hover:border-medical-300 transition-all duration-200">
+            <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+          </div>
+          <div>
+            <p class="text-base font-semibold text-slate-800">
+              Drag & drop your eye image here, or 
+              <span class="text-medical-600 font-bold underline decoration-medical-300 underline-offset-2">browse</span>
+            </p>
+            <p class="text-xs text-slate-500 mt-1">Supports high-res JPG, PNG, DICOM-exported formats (up to 15MB)</p>
+          </div>
+
+          <div class="flex items-center gap-2 pt-2">
+            <button 
+              type="button" 
+              onclick="event.stopPropagation(); document.getElementById('fileInput').click();"
+              class="inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-300 shadow-xs hover:bg-slate-50 hover:text-medical-600 hover:border-medical-300 transition-all"
+            >
+              <i data-lucide="camera" class="w-4 h-4 mr-1.5 text-medical-600"></i>
+              Add Image / Take Photo
+            </button>
+          </div>
+
+          <!-- Quick Guidelines Pill -->
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-3 text-[11px] text-slate-500">
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> Good Lighting</span>
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> Sharp Focus</span>
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> No Glare</span>
+          </div>
+        </div>
+
+        <!-- Preview State UI (Hidden Initially) -->
+        <div id="previewContainer" class="hidden relative w-full h-full flex flex-col items-center justify-center">
+          <div class="relative rounded-xl overflow-hidden shadow-lg border border-slate-200 max-h-[340px] max-w-full bg-slate-900 group/image">
+            <img 
+              id="imagePreview" 
+              src="" 
+              alt="Uploaded Eye Preview" 
+              class="object-contain max-h-[320px] w-auto mx-auto select-none"
+            />
+
+            <!-- Animated Laser Scan Line Overlay (Active during scanning) -->
+            <div id="scanningOverlay" class="hidden absolute inset-0 bg-medical-950/20 backdrop-brightness-95">
+              <div class="scan-beam animate-scan"></div>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-full border border-medical-500/40 text-white text-xs font-medium flex items-center space-x-2 shadow-lg">
+                  <i data-lucide="loader" class="w-3.5 h-3.5 text-medical-400 animate-spin"></i>
+                  <span>Analyzing ocular features & retinal markers...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Image Hover Actions -->
+            <div class="absolute top-3 right-3 flex items-center space-x-2 z-10">
+              <button 
+                type="button" 
+                id="btnChangeImage"
+                title="Change Image"
+                class="p-2 rounded-lg bg-white/90 hover:bg-white text-slate-700 hover:text-medical-600 shadow-md backdrop-blur-xs transition-all border border-slate-200/80"
+              >
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              </button>
+              <button 
+                type="button" 
+                id="btnRemoveImage"
+                title="Remove Image"
+                class="p-2 rounded-lg bg-white/90 hover:bg-rose-50 text-slate-700 hover:text-rose-600 shadow-md backdrop-blur-xs transition-all border border-slate-200/80"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Filename Badge -->
+            <div class="absolute bottom-2 left-2 z-10 px-2.5 py-1 rounded-md bg-slate-900/80 text-white text-[10px] font-mono tracking-wide truncate max-w-[200px]" id="imageFileName">
+              image.jpg
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button Area -->
+      <div class="mt-6 flex flex-col items-center">
+        <button 
+          id="btnAnalyze" 
+          disabled
+          class="w-full sm:w-auto min-w-[240px] px-8 py-3.5 rounded-xl font-semibold text-sm text-white shadow-lg transition-all duration-200 flex items-center justify-center space-x-2.5
+                 bg-slate-300 text-slate-500 cursor-not-allowed shadow-none
+                 data-[active=true]:bg-gradient-to-r data-[active=true]:from-medical-600 data-[active=true]:to-medical-500 
+                 data-[active=true]:hover:from-medical-700 data-[active=true]:hover:to-medical-600
+                 data-[active=true]:text-white data-[active=true]:cursor-pointer 
+                 data-[active=true]:shadow-medical-600/25 data-[active=true]:hover:shadow-medical-600/35 data-[active=true]:hover:scale-[1.01] active:scale-[0.99]"
+        >
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span id="analyzeBtnText">Analyze Image</span>
+        </button>
+      </div>
+
+      <!-- ================= RESULT DISPLAY CARD ================= -->
+      <div id="resultSection" class="hidden mt-8 pt-8 border-t border-slate-200 animate-fadeIn">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-2">
+            <div class="w-2.5 h-2.5 rounded-full bg-medical-500"></div>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Diagnostic Inference Result</h2>
+          </div>
+          <span id="analysisTimestamp" class="text-xs text-slate-400 font-mono"></span>
+        </div>
+
+        <!-- Result Box Card -->
+        <div class="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:p-6 space-y-5">
+          <!-- Primary Diagnosis Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span class="text-xs font-semibold text-slate-500 block mb-1">Detected Classification</span>
+              <div class="flex items-center space-x-3">
+                <div id="resultIconWrapper" class="w-10 h-10 rounded-xl flex items-center justify-center">
+                  <i id="resultIcon" data-lucide="check-circle" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 id="resultTitle" class="text-xl font-bold text-slate-900 tracking-tight">Normal / Healthy Eye</h3>
+                  <span id="severityBadge" class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">
+                    Low Risk
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confidence Metric -->
+            <div class="sm:text-right bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-slate-200">
+              <span class="text-xs font-medium text-slate-500 block mb-0.5">Model Confidence</span>
+              <span id="confidencePercentage" class="text-2xl font-black text-slate-900">95.4%</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+            <div 
+              id="confidenceBar" 
+              class="h-2.5 rounded-full bg-medical-600 transition-all duration-1000 ease-out" 
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <!-- Details & Recommendations -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <!-- Educational Overview -->
+            <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">
+                <i data-lucide="book-open" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>
+                Clinical Observation
+              </h4>
+              <p id="resultDescription" class="text-xs leading-relaxed text-slate-600">
+                The optical features exhibit normal vascular patterns, transparent crystalline lens, and no conspicuous lesions, hemorrhages, or opacity.
+              </p>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">
+                <i data-lucide="stethoscope" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>
+                Recommended Action
+              </h4>
+              <p id="resultAction" class="text-xs leading-relaxed text-slate-600">
+                Maintain routine annual ophthalmic exams. Practice the 20-20-20 rule to alleviate digital eye strain.
+              </p>
+            </div>
+          </div>
+
+          <!-- Differential Analysis Breakdown (Mock Model Output Features) -->
+          <div class="pt-2">
+            <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider block mb-2">Differential Multiclass Probabilities</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs" id="differentialList">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= MEDICAL DISCLAIMER FOOTER ================= -->
+  <footer class="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-8 pt-4">
+    <div class="rounded-2xl bg-amber-50/90 border border-amber-200/80 p-4 flex items-start space-x-3 shadow-xs">
+      <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+      <div class="text-xs text-amber-900/90 leading-relaxed">
+        <strong class="font-semibold text-amber-950">Medical Disclaimer:</strong> 
+        OptiScan AI is designed solely for informational, screening, and research purposes. This tool does not provide definitive medical diagnoses, clinical determinations, or treatment plans. If you experience vision loss, acute eye pain, sudden redness, or visual disturbances, consult a certified ophthalmologist or medical emergency unit immediately.
+      </div>
+    </div>
+    <p class="text-center text-[11px] text-slate-400 mt-4">
+      &copy; 2026 OptiScan AI Health Technologies. Compliant with synthetic medical imaging test standards.
+    </p>
+  </footer>
+
+  <!-- ================= CLIENT APPLICATION LOGIC ================= -->
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // DOM Elements
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const imageFileName = document.getElementById('imageFileName');
+    const btnChangeImage = document.getElementById('btnChangeImage');
+    const btnRemoveImage = document.getElementById('btnRemoveImage');
+    const btnAnalyze = document.getElementById('btnAnalyze');
+    const analyzeBtnText = document.getElementById('analyzeBtnText');
+    const scanningOverlay = document.getElementById('scanningOverlay');
+    const resultSection = document.getElementById('resultSection');
+
+    let currentFile = null;
+
+    // Drag & Drop Listeners
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('border-medical-500', 'bg-medical-50/50');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('border-medical-500', 'bg-medical-50/50');
+      });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        handleFileSelection(files[0]);
+      }
+    });
+
+    dropZone.addEventListener('click', (e) => {
+      // Trigger file picker only if clicking on prompt area
+      if (!currentFile || e.target.closest('#uploadPrompt')) {
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    btnChangeImage.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    });
+
+    btnRemoveImage.addEventListener('click', (e) => {
+      e.stopPropagation();
+      resetUploadState();
+    });
+
+    // File Handling
+    function handleFileSelection(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file (JPEG, PNG, WebP).');
+        return;
+      }
+
+      currentFile = file;
+      imageFileName.textContent = file.name;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        uploadPrompt.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+        
+        // Enable Analyze button
+        btnAnalyze.disabled = false;
+        btnAnalyze.setAttribute('data-active', 'true');
+
+        // Hide previous results if any
+        resultSection.classList.add('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetUploadState() {
+      currentFile = null;
+      fileInput.value = '';
+      imagePreview.src = '';
+      previewContainer.classList.add('hidden');
+      uploadPrompt.classList.remove('hidden');
+
+      btnAnalyze.disabled = true;
+      btnAnalyze.removeAttribute('data-active');
+      resultSection.classList.add('hidden');
+    }
+
+    // ================= AI PREDICTION / BACKEND INTEGRATION =================
+    btnAnalyze.addEventListener('click', async () => {
+      if (!currentFile) return;
+
+      // Enter Scanning State
+      btnAnalyze.disabled = true;
+      btnAnalyze.removeAttribute('data-active');
+      analyzeBtnText.textContent = "Scanning Image...";
+      scanningOverlay.classList.remove('hidden');
+      resultSection.classList.add('hidden');
+
+      try {
+        /**
+         * -------------------------------------------------------------
+         * BACKEND API INTEGRATION POINT (Python / FastAPI / Flask)
+         * -------------------------------------------------------------
+         * To connect to your real AI backend model (e.g. PyTorch / TensorFlow / ResNet / ViT):
+         * 
+         * const formData = new FormData();
+         * formData.append('image', currentFile);
+         * 
+         * const response = await fetch('/api/predict', {
+         *   method: 'POST',
+         *   body: formData
+         * });
+         * const aiResult = await response.json();
+         * -------------------------------------------------------------
+         */
+
+        // Simulated AI inference delay (2 seconds)
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Mock prediction outcome (realistic medical ocular pathology classes)
+        const mockConditions = [
+          {
+            title: "Normal / Healthy Ocular Structure",
+            severity: "Low Risk",
+            severityClass: "bg-emerald-100 text-emerald-800",
+            icon: "check-circle",
+            iconBg: "bg-emerald-100 text-emerald-600",
+            confidence: 96.2,
+            description: "No signs of crystalline lens opacification, maculopathy, microaneurysms, or conjunctival inflammation detected. The corneal contour and retinal vasculature are clear and within physiological parameters.",
+            action: "Maintain regular annual ophthalmology wellness checkups. Ensure UV protection with sunglasses during outdoor exposure.",
+            probabilities: [
+              { name: "Normal", value: 96.2 },
+              { name: "Cataract", value: 1.8 },
+              { name: "Conjunctivitis", value: 1.2 },
+              { name: "Retinopathy", value: 0.8 }
+            ]
+          },
+          {
+            title: "Suspected Cataract Formation",
+            severity: "Moderate Risk",
+            severityClass: "bg-amber-100 text-amber-800",
+            icon: "alert-triangle",
+            iconBg: "bg-amber-100 text-amber-600",
+            confidence: 93.8,
+            description: "Noticeable clouding and loss of transparency observed in the natural crystalline lens region, potentially affecting light transmission to the retina.",
+            action: "Schedule a comprehensive slit-lamp examination with an eye specialist to evaluate visual acuity degradation and surgical staging options.",
+            probabilities: [
+              { name: "Cataract", value: 93.8 },
+              { name: "Normal", value: 3.4 },
+              { name: "Retinopathy", value: 1.6 },
+              { name: "Conjunctivitis", value: 1.2 }
+            ]
+          },
+          {
+            title: "Conjunctival Hyperemia / Conjunctivitis",
+            severity: "Mild to Moderate",
+            severityClass: "bg-orange-100 text-orange-800",
+            icon: "eye",
+            iconBg: "bg-orange-100 text-orange-600",
+            confidence: 91.5,
+            description: "Superficial vascular engorgement and dilation of conjunctival microvessels detected. Features are consistent with acute conjunctivitis (allergic, viral, or bacterial).",
+            action: "Avoid rubbing eyes and contact lens wear. Consult an optometrist or physician for appropriate topical anti-inflammatory or antibacterial eyedrops.",
+            probabilities: [
+              { name: "Conjunctivitis", value: 91.5 },
+              { name: "Normal", value: 4.8 },
+              { name: "Cataract", value: 2.1 },
+              { name: "Retinopathy", value: 1.6 }
+            ]
+          },
+          {
+            title: "Signs of Diabetic Retinopathy",
+            severity: "Elevated Risk",
+            severityClass: "bg-rose-100 text-rose-800",
+            icon: "activity",
+            iconBg: "bg-rose-100 text-rose-600",
+            confidence: 89.7,
+            description: "Microvascular anomalies detected, including microaneurysms, blot hemorrhages, and potential hard exudates near the posterior pole of the retina.",
+            action: "Urgent dilated retinal examination and Optical Coherence Tomography (OCT) recommended. Coordinate with an endocrinologist for tight glycemic control.",
+            probabilities: [
+              { name: "Retinopathy", value: 89.7 },
+              { name: "Normal", value: 5.3 },
+              { name: "Cataract", value: 3.0 },
+              { name: "Conjunctivitis", value: 2.0 }
+            ]
+          }
+        ];
+
+        // Pick diagnosis based on filename or randomized for realistic demonstration
+        const hash = currentFile.name.length % mockConditions.length;
+        const selectedResult = mockConditions[hash];
+
+        displayResults(selectedResult);
+
+      } catch (err) {
+        alert("An error occurred during screening analysis: " + err.message);
+      } finally {
+        scanningOverlay.classList.add('hidden');
+        analyzeBtnText.textContent = "Re-analyze Image";
+        btnAnalyze.disabled = false;
+        btnAnalyze.setAttribute('data-active', 'true');
+      }
+    });
+
+    function displayResults(data) {
+      // Update result fields
+      document.getElementById('resultTitle').textContent = data.title;
+      document.getElementById('confidencePercentage').textContent = data.confidence.toFixed(1) + "%";
+      document.getElementById('resultDescription').textContent = data.description;
+      document.getElementById('resultAction').textContent = data.action;
+
+      const severityBadge = document.getElementById('severityBadge');
+      severityBadge.textContent = data.severity;
+      severityBadge.className = `inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${data.severityClass}`;
+
+      const iconWrapper = document.getElementById('resultIconWrapper');
+      iconWrapper.className = `w-10 h-10 rounded-xl flex items-center justify-center ${data.iconBg}`;
+      
+      const resultIcon = document.getElementById('resultIcon');
+      resultIcon.setAttribute('data-lucide', data.icon);
+
+      // Populate differential probabilities
+      const differentialContainer = document.getElementById('differentialList');
+      differentialContainer.innerHTML = '';
+      data.probabilities.forEach(p => {
+        const item = document.createElement('div');
+        item.className = "bg-white p-2.5 rounded-lg border border-slate-200 flex flex-col justify-between";
+        item.innerHTML = `
+          <span class="text-slate-500 text-[10px] truncate">${p.name}</span>
+          <span class="font-bold text-slate-800 text-xs mt-0.5">${p.value.toFixed(1)}%</span>
+        `;
+        differentialContainer.appendChild(item);
+      });
+
+      // Update timestamp
+      const now = new Date();
+      document.getElementById('analysisTimestamp').textContent = `Screened: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+      // Show result section
+      resultSection.classList.remove('hidden');
+
+      // Animate confidence progress bar
+      setTimeout(() => {
+        document.getElementById('confidenceBar').style.width = data.confidence + '%';
+      }, 100);
+
+      // Refresh newly injected Lucide icons
+      lucide.createIcons();
+
+      // Smooth scroll to results
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+</body>
+</html>
