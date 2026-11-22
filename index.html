@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OptiScan AI — Intelligent Ocular Screening</title>
+  <title>OptiScan AI — Ocular Screening & Diagnostic AI</title>
   
-  <!-- Google Fonts: Inter -->
+  <!-- Google Fonts: Inter & Sarabun for clean Thai/English typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,7 +17,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['Inter', 'sans-serif'],
+            sans: ['Sarabun', 'Inter', 'sans-serif'],
           },
           colors: {
             medical: {
@@ -41,12 +41,16 @@
           },
           animation: {
             'scan': 'scanLine 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
-            'pulse-subtle': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'fadeIn': 'fadeIn 0.35s ease-out forwards',
           },
           keyframes: {
             scanLine: {
               '0%, 100%': { top: '0%' },
               '50%': { top: '96%' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(8px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
             }
           }
         }
@@ -80,7 +84,7 @@
 <body class="medical-bg-pattern min-h-screen text-slate-800 font-sans flex flex-col justify-between antialiased selection:bg-medical-100 selection:text-medical-800">
 
   <!-- ================= HEADER / NAVBAR ================= -->
-  <header class="w-full bg-white/80 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 transition-all">
+  <header class="w-full bg-white/85 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 transition-all">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       <!-- Logo + Brand -->
       <div class="flex items-center space-x-3">
@@ -92,19 +96,40 @@
             <span class="font-bold text-lg text-slate-900 tracking-tight">OptiScan<span class="text-medical-600">AI</span></span>
             <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-medical-50 text-medical-700 border border-medical-200">
               <span class="w-1.5 h-1.5 rounded-full bg-medical-500 mr-1.5 animate-pulse"></span>
-              v2.4 Clin-Grade
+              v2.5 Clin-Grade
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 hidden sm:block -mt-0.5">Ocular Deep-Learning Diagnostics</p>
+          <p class="text-[11px] text-slate-500 hidden sm:block -mt-0.5" data-i18n="appSubtitle">ระบบตรวจคัดกรองโรคทางสายตาด้วย AI</p>
         </div>
       </div>
 
-      <!-- Status Badge -->
-      <div class="flex items-center space-x-3">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm">
+      <!-- Action Items: AI Badge + Language Toggle Button -->
+      <div class="flex items-center space-x-2.5 sm:space-x-3">
+        <!-- AI Status Badge -->
+        <span class="hidden xs:inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
           <i data-lucide="activity" class="w-3.5 h-3.5 mr-1.5 text-emerald-500"></i>
-          AI-Assisted Screening
+          <span data-i18n="badgeScreening">AI คัดกรองแม่นยำ</span>
         </span>
+
+        <!-- Language Switcher Pill Button -->
+        <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-inner">
+          <button 
+            type="button" 
+            id="btnLangTh" 
+            onclick="setLanguage('th')"
+            class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs"
+          >
+            🇹🇭 TH
+          </button>
+          <button 
+            type="button" 
+            id="btnLangEn" 
+            onclick="setLanguage('en')"
+            class="px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200"
+          >
+            🇺🇸 EN
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -116,13 +141,13 @@
     <div class="text-center max-w-xl mx-auto mb-8 sm:mb-10">
       <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-medical-50 text-medical-700 border border-medical-200 mb-3 shadow-xs">
         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-medical-600"></i>
-        Automated Computer Vision Screening
+        <span data-i18n="heroPill">ระบบตรวจจับภาพจอประสาทตาและดวงตาอัตโนมัติ</span>
       </div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-        Instant AI Eye Screening
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight" data-i18n="heroTitle">
+        ตรวจคัดกรองโรคตาด้วย AI ทันที
       </h1>
-      <p class="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed">
-        Upload a clear close-up photograph of the anterior eye or a fundus retinal scan to detect common pathologies within seconds.
+      <p class="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed" data-i18n="heroDesc">
+        อัปโหลดภาพถ่ายระยะใกล้ของดวงตา หรือภาพสแกนจอประสาทตา (Fundus) เพื่อวิเคราะห์ความผิดปกติเบื้องต้นได้ภายในไม่กี่วินาที
       </p>
     </div>
 
@@ -150,10 +175,10 @@
           </div>
           <div>
             <p class="text-base font-semibold text-slate-800">
-              Drag & drop your eye image here, or 
-              <span class="text-medical-600 font-bold underline decoration-medical-300 underline-offset-2">browse</span>
+              <span data-i18n="dropText">ลากไฟล์ภาพดวงตามาวางที่นี่ หรือ</span>
+              <span class="text-medical-600 font-bold underline decoration-medical-300 underline-offset-2" data-i18n="browseText">เลือกไฟล์</span>
             </p>
-            <p class="text-xs text-slate-500 mt-1">Supports high-res JPG, PNG, DICOM-exported formats (up to 15MB)</p>
+            <p class="text-xs text-slate-500 mt-1" data-i18n="supportText">รองรับไฟล์ภาพ JPG, PNG, DICOM ความละเอียดสูง (สูงสุด 15MB)</p>
           </div>
 
           <div class="flex items-center gap-2 pt-2">
@@ -163,15 +188,15 @@
               class="inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-300 shadow-xs hover:bg-slate-50 hover:text-medical-600 hover:border-medical-300 transition-all"
             >
               <i data-lucide="camera" class="w-4 h-4 mr-1.5 text-medical-600"></i>
-              Add Image / Take Photo
+              <span data-i18n="btnTakeOrUpload">เพิ่มรูปภาพ / ถ่ายภาพด้วยกล้อง</span>
             </button>
           </div>
 
           <!-- Quick Guidelines Pill -->
           <div class="flex flex-wrap items-center justify-center gap-3 pt-3 text-[11px] text-slate-500">
-            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> Good Lighting</span>
-            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> Sharp Focus</span>
-            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> No Glare</span>
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipLight">แสงสว่างเพียงพอ</span></span>
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipFocus">ภาพคมชัด ไม่เบลอ</span></span>
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipGlare">ไม่มีแสงสะท้อนจ้า</span></span>
           </div>
         </div>
 
@@ -189,9 +214,9 @@
             <div id="scanningOverlay" class="hidden absolute inset-0 bg-medical-950/20 backdrop-brightness-95">
               <div class="scan-beam animate-scan"></div>
               <div class="absolute inset-0 flex items-center justify-center">
-                <div class="bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-full border border-medical-500/40 text-white text-xs font-medium flex items-center space-x-2 shadow-lg">
+                <div class="bg-slate-900/85 backdrop-blur-md px-4 py-2 rounded-full border border-medical-500/40 text-white text-xs font-medium flex items-center space-x-2 shadow-lg">
                   <i data-lucide="loader" class="w-3.5 h-3.5 text-medical-400 animate-spin"></i>
-                  <span>Analyzing ocular features & retinal markers...</span>
+                  <span data-i18n="analyzingText">กำลังวิเคราะห์โครงสร้างกระจกตาและเส้นเลือดจอประสาทตา...</span>
                 </div>
               </div>
             </div>
@@ -237,7 +262,7 @@
                  data-[active=true]:shadow-medical-600/25 data-[active=true]:hover:shadow-medical-600/35 data-[active=true]:hover:scale-[1.01] active:scale-[0.99]"
         >
           <i data-lucide="sparkles" class="w-4 h-4"></i>
-          <span id="analyzeBtnText">Analyze Image</span>
+          <span id="analyzeBtnText" data-i18n="btnAnalyze">เริ่มวิเคราะห์ภาพถ่าย</span>
         </button>
       </div>
 
@@ -246,7 +271,7 @@
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center space-x-2">
             <div class="w-2.5 h-2.5 rounded-full bg-medical-500"></div>
-            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500">Diagnostic Inference Result</h2>
+            <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500" data-i18n="resultSectionHeading">ผลการวิเคราะห์และคัดกรองเบื้องต้น</h2>
           </div>
           <span id="analysisTimestamp" class="text-xs text-slate-400 font-mono"></span>
         </div>
@@ -256,7 +281,7 @@
           <!-- Primary Diagnosis Header -->
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <span class="text-xs font-semibold text-slate-500 block mb-1">Detected Classification</span>
+              <span class="text-xs font-semibold text-slate-500 block mb-1" data-i18n="detectedConditionLabel">สภาวะที่ตรวจพบ</span>
               <div class="flex items-center space-x-3">
                 <div id="resultIconWrapper" class="w-10 h-10 rounded-xl flex items-center justify-center">
                   <i id="resultIcon" data-lucide="check-circle" class="w-5 h-5"></i>
@@ -272,7 +297,7 @@
 
             <!-- Confidence Metric -->
             <div class="sm:text-right bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-slate-200">
-              <span class="text-xs font-medium text-slate-500 block mb-0.5">Model Confidence</span>
+              <span class="text-xs font-medium text-slate-500 block mb-0.5" data-i18n="confidenceLabel">ระดับความมั่นใจของโมเดล</span>
               <span id="confidencePercentage" class="text-2xl font-black text-slate-900">95.4%</span>
             </div>
           </div>
@@ -292,10 +317,10 @@
             <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">
               <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">
                 <i data-lucide="book-open" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>
-                Clinical Observation
+                <span data-i18n="clinicalObservationHeading">ข้อสังเกตทางคลินิก</span>
               </h4>
               <p id="resultDescription" class="text-xs leading-relaxed text-slate-600">
-                The optical features exhibit normal vascular patterns, transparent crystalline lens, and no conspicuous lesions, hemorrhages, or opacity.
+                -
               </p>
             </div>
 
@@ -303,17 +328,17 @@
             <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">
               <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">
                 <i data-lucide="stethoscope" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>
-                Recommended Action
+                <span data-i18n="recommendedActionHeading">คำแนะนำเบื้องต้น</span>
               </h4>
               <p id="resultAction" class="text-xs leading-relaxed text-slate-600">
-                Maintain routine annual ophthalmic exams. Practice the 20-20-20 rule to alleviate digital eye strain.
+                -
               </p>
             </div>
           </div>
 
           <!-- Differential Analysis Breakdown (Mock Model Output Features) -->
           <div class="pt-2">
-            <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider block mb-2">Differential Multiclass Probabilities</span>
+            <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider block mb-2" data-i18n="differentialHeading">ความน่าจะเป็นจำแนกตามประเภทโรค (Multiclass Probabilities)</span>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs" id="differentialList">
               <!-- Dynamically populated -->
             </div>
@@ -328,17 +353,235 @@
     <div class="rounded-2xl bg-amber-50/90 border border-amber-200/80 p-4 flex items-start space-x-3 shadow-xs">
       <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
       <div class="text-xs text-amber-900/90 leading-relaxed">
-        <strong class="font-semibold text-amber-950">Medical Disclaimer:</strong> 
-        OptiScan AI is designed solely for informational, screening, and research purposes. This tool does not provide definitive medical diagnoses, clinical determinations, or treatment plans. If you experience vision loss, acute eye pain, sudden redness, or visual disturbances, consult a certified ophthalmologist or medical emergency unit immediately.
+        <strong class="font-semibold text-amber-950" data-i18n="disclaimerLabel">ข้อจำกัดความรับผิดชอบทางการแพทย์:</strong> 
+        <span data-i18n="disclaimerBody">
+          OptiScan AI ถูกออกแบบมาเพื่อการคัดกรองเบื้องต้นและการศึกษาเท่านั้น ระบบนี้ไม่สามารถใช้แทนการวินิจฉัย การตรวจรักษา หรือแผนการรักษาของจักษุแพทย์ผู้เชี่ยวชาญได้ หากท่านมีอาการปวดตาเฉียบพลัน ตาแดงผิดปกติ หรือสูญเสียการมองเห็น กรุณาพบแพทย์เฉพาะทางหรือเข้ารับการตรวจที่โรงพยาบาลทันที
+        </span>
       </div>
     </div>
     <p class="text-center text-[11px] text-slate-400 mt-4">
-      &copy; 2026 OptiScan AI Health Technologies. Compliant with synthetic medical imaging test standards.
+      &copy; 2026 OptiScan AI Health Technologies. <span data-i18n="footerSub">ระบบทดสอบคัดกรองภาพถ่ายทางการแพทย์มาตรฐาน</span>
     </p>
   </footer>
 
   <!-- ================= CLIENT APPLICATION LOGIC ================= -->
   <script>
+    // ================= MULTILINGUAL (I18N) DICTIONARY =================
+    const translations = {
+      th: {
+        appSubtitle: "ระบบตรวจคัดกรองโรคทางสายตาด้วย AI",
+        badgeScreening: "AI คัดกรองแม่นยำ",
+        heroPill: "ระบบตรวจจับภาพจอประสาทตาและดวงตาอัตโนมัติ",
+        heroTitle: "ตรวจคัดกรองโรคตาด้วย AI ทันที",
+        heroDesc: "อัปโหลดภาพถ่ายระยะใกล้ของดวงตา หรือภาพสแกนจอประสาทตา (Fundus) เพื่อวิเคราะห์ความผิดปกติเบื้องต้นได้ภายในไม่กี่วินาที",
+        dropText: "ลากไฟล์ภาพดวงตามาวางที่นี่ หรือ",
+        browseText: "เลือกไฟล์",
+        supportText: "รองรับไฟล์ภาพ JPG, PNG, DICOM ความละเอียดสูง (สูงสุด 15MB)",
+        btnTakeOrUpload: "เพิ่มรูปภาพ / ถ่ายภาพด้วยกล้อง",
+        tipLight: "แสงสว่างเพียงพอ",
+        tipFocus: "ภาพคมชัด ไม่เบลอ",
+        tipGlare: "ไม่มีแสงสะท้อนจ้า",
+        analyzingText: "กำลังวิเคราะห์โครงสร้างกระจกตาและเส้นเลือดจอประสาทตา...",
+        btnAnalyze: "เริ่มวิเคราะห์ภาพถ่าย",
+        btnReanalyze: "วิเคราะห์ภาพใหม่อีกครั้ง",
+        btnScanning: "กำลังวิเคราะห์...",
+        resultSectionHeading: "ผลการวิเคราะห์และคัดกรองเบื้องต้น",
+        detectedConditionLabel: "สภาวะที่ตรวจพบ",
+        confidenceLabel: "ระดับความมั่นใจของโมเดล",
+        clinicalObservationHeading: "ข้อสังเกตทางคลินิก",
+        recommendedActionHeading: "คำแนะนำเบื้องต้น",
+        differentialHeading: "ความน่าจะเป็นจำแนกตามประเภทโรค (Multiclass Probabilities)",
+        disclaimerLabel: "ข้อจำกัดความรับผิดชอบทางการแพทย์:",
+        disclaimerBody: "OptiScan AI ถูกออกแบบมาเพื่อการคัดกรองเบื้องต้นและการศึกษาเท่านั้น ระบบนี้ไม่สามารถใช้แทนการวินิจฉัย การตรวจรักษา หรือแผนการรักษาของจักษุแพทย์ผู้เชี่ยวชาญได้ หากท่านมีอาการปวดตาเฉียบพลัน ตาแดงผิดปกติ หรือสูญเสียการมองเห็น กรุณาพบแพทย์เฉพาะทางหรือเข้ารับการตรวจที่โรงพยาบาลทันที",
+        footerSub: "ระบบทดสอบคัดกรองภาพถ่ายทางการแพทย์มาตรฐาน",
+        screenedAt: "เวลาที่ตรวจ:",
+        invalidFile: "กรุณาเลือกไฟล์ภาพที่ถูกต้อง (JPEG, PNG, WebP)"
+      },
+      en: {
+        appSubtitle: "Ocular Deep-Learning Diagnostics",
+        badgeScreening: "AI-Assisted Screening",
+        heroPill: "Automated Computer Vision Screening",
+        heroTitle: "Instant AI Eye Screening",
+        heroDesc: "Upload a clear close-up photograph of the anterior eye or a fundus retinal scan to detect common pathologies within seconds.",
+        dropText: "Drag & drop your eye image here, or",
+        browseText: "browse",
+        supportText: "Supports high-res JPG, PNG, DICOM-exported formats (up to 15MB)",
+        btnTakeOrUpload: "Add Image / Take Photo",
+        tipLight: "Good Lighting",
+        tipFocus: "Sharp Focus",
+        tipGlare: "No Glare",
+        analyzingText: "Analyzing ocular features & retinal markers...",
+        btnAnalyze: "Analyze Image",
+        btnReanalyze: "Re-analyze Image",
+        btnScanning: "Scanning Image...",
+        resultSectionHeading: "Diagnostic Inference Result",
+        detectedConditionLabel: "Detected Classification",
+        confidenceLabel: "Model Confidence",
+        clinicalObservationHeading: "Clinical Observation",
+        recommendedActionHeading: "Recommended Action",
+        differentialHeading: "Differential Multiclass Probabilities",
+        disclaimerLabel: "Medical Disclaimer:",
+        disclaimerBody: "OptiScan AI is designed solely for informational, screening, and research purposes. This tool does not provide definitive medical diagnoses, clinical determinations, or treatment plans. If you experience vision loss, acute eye pain, sudden redness, or visual disturbances, consult a certified ophthalmologist or emergency care immediately.",
+        footerSub: "Compliant with synthetic medical imaging test standards.",
+        screenedAt: "Screened:",
+        invalidFile: "Please select a valid image file (JPEG, PNG, WebP)."
+      }
+    };
+
+    // Diagnostic conditions dictionary for Thai & English
+    const conditionsData = [
+      {
+        id: "normal",
+        th: {
+          title: "ตาปกติ / สุขภาพดวงตาสมบูรณ์",
+          severity: "ความเสี่ยงต่ำมาก",
+          description: "ไม่พบการขุ่นมัวของเลนส์ตา ไม่พบรอยโรคบริเวณจุดรับภาพ (Macula) เส้นเลือดจอประสาทตามีการกระจายตัวที่สมบูรณ์เป็นปกติ",
+          action: "ควรตรวจสุขภาพตาเป็นประจำปีละ 1 ครั้ง และสวมแว่นกันแดดเมื่อต้องสัมผัสรังสี UV ต่อเนื่องเป็นเวลานาน",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Normal / Healthy Ocular Structure",
+          severity: "Low Risk",
+          description: "No signs of crystalline lens opacification, maculopathy, microaneurysms, or conjunctival inflammation detected. The corneal contour and retinal vasculature are clear and within physiological parameters.",
+          action: "Maintain regular annual ophthalmology wellness checkups. Ensure UV protection with sunglasses during outdoor exposure.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-emerald-100 text-emerald-800",
+        icon: "check-circle",
+        iconBg: "bg-emerald-100 text-emerald-600",
+        confidence: 96.2,
+        probabilities: [
+          { key: "normal", value: 96.2 },
+          { key: "cataract", value: 1.8 },
+          { key: "conjunctivitis", value: 1.2 },
+          { key: "retinopathy", value: 0.8 }
+        ]
+      },
+      {
+        id: "cataract",
+        th: {
+          title: "สงสัยภาวะต้อกระจก (Cataract)",
+          severity: "ความเสี่ยงปานกลาง",
+          description: "พบความขุ่นมัวและสูญเสียความโปร่งใสในบริเวณเลนส์แก้วตา ซึ่งอาจลดทอนการส่องผ่านของแสงไปยังจอประสาทตา ทำให้สายตามัว",
+          action: "แนะนำให้นัดหมายตรวจละเอียดด้วยเครื่อง Slit-lamp กับจักษุแพทย์ เพื่อประเมินระดับความขุ่นและวางแผนแนวทางการรักษา",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Suspected Cataract Formation",
+          severity: "Moderate Risk",
+          description: "Noticeable clouding and loss of transparency observed in the natural crystalline lens region, potentially affecting light transmission to the retina.",
+          action: "Schedule a comprehensive slit-lamp examination with an eye specialist to evaluate visual acuity degradation and surgical staging options.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-amber-100 text-amber-800",
+        icon: "alert-triangle",
+        iconBg: "bg-amber-100 text-amber-600",
+        confidence: 93.8,
+        probabilities: [
+          { key: "cataract", value: 93.8 },
+          { key: "normal", value: 3.4 },
+          { key: "retinopathy", value: 1.6 },
+          { key: "conjunctivitis", value: 1.2 }
+        ]
+      },
+      {
+        id: "conjunctivitis",
+        th: {
+          title: "เยื่อบุตาอักเสบ / ตาแดง (Conjunctivitis)",
+          severity: "ความเสี่ยงปานกลาง",
+          description: "พบการขยายตัวและคั่งของหลอดเลือดฝอยบริเวณเยื่อบุตาขาว สอดคล้องกับภาวะเยื่อบุตาอักเสบเฉียบพลัน (จากภูมิแพ้ เชื้อไวรัส หรือแบคทีเรีย)",
+          action: "งดการขยี้ตาและถอดคอนแทคเลนส์ทันที ควรปรึกษาแพทย์หรือเภสัชกรเพื่อรับยาหยอดตาต้านการอักเสบที่ถูกต้อง",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Conjunctival Hyperemia / Conjunctivitis",
+          severity: "Mild to Moderate",
+          description: "Superficial vascular engorgement and dilation of conjunctival microvessels detected. Features are consistent with acute conjunctivitis (allergic, viral, or bacterial).",
+          action: "Avoid rubbing eyes and contact lens wear. Consult an optometrist or physician for appropriate topical anti-inflammatory or antibacterial eyedrops.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-orange-100 text-orange-800",
+        icon: "eye",
+        iconBg: "bg-orange-100 text-orange-600",
+        confidence: 91.5,
+        probabilities: [
+          { key: "conjunctivitis", value: 91.5 },
+          { key: "normal", value: 4.8 },
+          { key: "cataract", value: 2.1 },
+          { key: "retinopathy", value: 1.6 }
+        ]
+      },
+      {
+        id: "retinopathy",
+        th: {
+          title: "สัญญาณเบาหวานขึ้นจอประสาทตา (Diabetic Retinopathy)",
+          severity: "ความเสี่ยงสูง ควรตรวจซ้ำ",
+          description: "ตรวจพบลักษณะของหลอดเลือดผิดปกติ รอยหลอดเลือดโป่งพองขนาดเล็ก (Microaneurysms) หรือจุดเลือดออกบริเวณจอประสาทตา",
+          action: "แนะนำให้พบจักษุแพทย์เพื่อทำการขยายม่านตาและตรวจจอประสาทตาแบบละเอียด (OCT) พร้อมควบคุมระดับน้ำตาลในเลือดร่วมกับแพทย์ประจำตัว",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Signs of Diabetic Retinopathy",
+          severity: "Elevated Risk",
+          description: "Microvascular anomalies detected, including microaneurysms, blot hemorrhages, and potential hard exudates near the posterior pole of the retina.",
+          action: "Urgent dilated retinal examination and Optical Coherence Tomography (OCT) recommended. Coordinate with an endocrinologist for tight glycemic control.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-rose-100 text-rose-800",
+        icon: "activity",
+        iconBg: "bg-rose-100 text-rose-600",
+        confidence: 89.7,
+        probabilities: [
+          { key: "retinopathy", value: 89.7 },
+          { key: "normal", value: 5.3 },
+          { key: "cataract", value: 3.0 },
+          { key: "conjunctivitis", value: 2.0 }
+        ]
+      }
+    ];
+
+    let currentLang = 'th';
+    let currentResultData = null;
+    let currentFile = null;
+
+    // Language Toggle Function
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      // Update UI button highlights
+      const btnTh = document.getElementById('btnLangTh');
+      const btnEn = document.getElementById('btnLangEn');
+
+      if (lang === 'th') {
+        btnTh.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs";
+        btnEn.className = "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200";
+      } else {
+        btnEn.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs";
+        btnTh.className = "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200";
+      }
+
+      // Update static texts
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+
+      // Update button text depending on current state
+      const analyzeBtn = document.getElementById('btnAnalyze');
+      const analyzeBtnText = document.getElementById('analyzeBtnText');
+      if (analyzeBtn.hasAttribute('data-active')) {
+        analyzeBtnText.textContent = currentResultData ? translations[lang].btnReanalyze : translations[lang].btnAnalyze;
+      }
+
+      // If results are currently visible, re-render them in the chosen language
+      if (currentResultData) {
+        renderResultCard(currentResultData);
+      }
+    }
+
     // Initialize Lucide icons
     lucide.createIcons();
 
@@ -355,8 +598,6 @@
     const analyzeBtnText = document.getElementById('analyzeBtnText');
     const scanningOverlay = document.getElementById('scanningOverlay');
     const resultSection = document.getElementById('resultSection');
-
-    let currentFile = null;
 
     // Drag & Drop Listeners
     ['dragenter', 'dragover'].forEach(eventName => {
@@ -383,7 +624,6 @@
     });
 
     dropZone.addEventListener('click', (e) => {
-      // Trigger file picker only if clicking on prompt area
       if (!currentFile || e.target.closest('#uploadPrompt')) {
         fileInput.click();
       }
@@ -408,7 +648,7 @@
     // File Handling
     function handleFileSelection(file) {
       if (!file.type.startsWith('image/')) {
-        alert('Please select a valid image file (JPEG, PNG, WebP).');
+        alert(translations[currentLang].invalidFile);
         return;
       }
 
@@ -424,15 +664,18 @@
         // Enable Analyze button
         btnAnalyze.disabled = false;
         btnAnalyze.setAttribute('data-active', 'true');
+        analyzeBtnText.textContent = translations[currentLang].btnAnalyze;
 
-        // Hide previous results if any
+        // Hide previous results
         resultSection.classList.add('hidden');
+        currentResultData = null;
       };
       reader.readAsDataURL(file);
     }
 
     function resetUploadState() {
       currentFile = null;
+      currentResultData = null;
       fileInput.value = '';
       imagePreview.src = '';
       previewContainer.classList.add('hidden');
@@ -440,6 +683,7 @@
 
       btnAnalyze.disabled = true;
       btnAnalyze.removeAttribute('data-active');
+      analyzeBtnText.textContent = translations[currentLang].btnAnalyze;
       resultSection.classList.add('hidden');
     }
 
@@ -450,7 +694,7 @@
       // Enter Scanning State
       btnAnalyze.disabled = true;
       btnAnalyze.removeAttribute('data-active');
-      analyzeBtnText.textContent = "Scanning Image...";
+      analyzeBtnText.textContent = translations[currentLang].btnScanning;
       scanningOverlay.classList.remove('hidden');
       resultSection.classList.add('hidden');
 
@@ -459,8 +703,6 @@
          * -------------------------------------------------------------
          * BACKEND API INTEGRATION POINT (Python / FastAPI / Flask)
          * -------------------------------------------------------------
-         * To connect to your real AI backend model (e.g. PyTorch / TensorFlow / ResNet / ViT):
-         * 
          * const formData = new FormData();
          * formData.append('image', currentFile);
          * 
@@ -475,99 +717,32 @@
         // Simulated AI inference delay (2 seconds)
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Mock prediction outcome (realistic medical ocular pathology classes)
-        const mockConditions = [
-          {
-            title: "Normal / Healthy Ocular Structure",
-            severity: "Low Risk",
-            severityClass: "bg-emerald-100 text-emerald-800",
-            icon: "check-circle",
-            iconBg: "bg-emerald-100 text-emerald-600",
-            confidence: 96.2,
-            description: "No signs of crystalline lens opacification, maculopathy, microaneurysms, or conjunctival inflammation detected. The corneal contour and retinal vasculature are clear and within physiological parameters.",
-            action: "Maintain regular annual ophthalmology wellness checkups. Ensure UV protection with sunglasses during outdoor exposure.",
-            probabilities: [
-              { name: "Normal", value: 96.2 },
-              { name: "Cataract", value: 1.8 },
-              { name: "Conjunctivitis", value: 1.2 },
-              { name: "Retinopathy", value: 0.8 }
-            ]
-          },
-          {
-            title: "Suspected Cataract Formation",
-            severity: "Moderate Risk",
-            severityClass: "bg-amber-100 text-amber-800",
-            icon: "alert-triangle",
-            iconBg: "bg-amber-100 text-amber-600",
-            confidence: 93.8,
-            description: "Noticeable clouding and loss of transparency observed in the natural crystalline lens region, potentially affecting light transmission to the retina.",
-            action: "Schedule a comprehensive slit-lamp examination with an eye specialist to evaluate visual acuity degradation and surgical staging options.",
-            probabilities: [
-              { name: "Cataract", value: 93.8 },
-              { name: "Normal", value: 3.4 },
-              { name: "Retinopathy", value: 1.6 },
-              { name: "Conjunctivitis", value: 1.2 }
-            ]
-          },
-          {
-            title: "Conjunctival Hyperemia / Conjunctivitis",
-            severity: "Mild to Moderate",
-            severityClass: "bg-orange-100 text-orange-800",
-            icon: "eye",
-            iconBg: "bg-orange-100 text-orange-600",
-            confidence: 91.5,
-            description: "Superficial vascular engorgement and dilation of conjunctival microvessels detected. Features are consistent with acute conjunctivitis (allergic, viral, or bacterial).",
-            action: "Avoid rubbing eyes and contact lens wear. Consult an optometrist or physician for appropriate topical anti-inflammatory or antibacterial eyedrops.",
-            probabilities: [
-              { name: "Conjunctivitis", value: 91.5 },
-              { name: "Normal", value: 4.8 },
-              { name: "Cataract", value: 2.1 },
-              { name: "Retinopathy", value: 1.6 }
-            ]
-          },
-          {
-            title: "Signs of Diabetic Retinopathy",
-            severity: "Elevated Risk",
-            severityClass: "bg-rose-100 text-rose-800",
-            icon: "activity",
-            iconBg: "bg-rose-100 text-rose-600",
-            confidence: 89.7,
-            description: "Microvascular anomalies detected, including microaneurysms, blot hemorrhages, and potential hard exudates near the posterior pole of the retina.",
-            action: "Urgent dilated retinal examination and Optical Coherence Tomography (OCT) recommended. Coordinate with an endocrinologist for tight glycemic control.",
-            probabilities: [
-              { name: "Retinopathy", value: 89.7 },
-              { name: "Normal", value: 5.3 },
-              { name: "Cataract", value: 3.0 },
-              { name: "Conjunctivitis", value: 2.0 }
-            ]
-          }
-        ];
+        // Deterministic mock condition based on filename length
+        const hash = currentFile.name.length % conditionsData.length;
+        currentResultData = conditionsData[hash];
 
-        // Pick diagnosis based on filename or randomized for realistic demonstration
-        const hash = currentFile.name.length % mockConditions.length;
-        const selectedResult = mockConditions[hash];
-
-        displayResults(selectedResult);
+        renderResultCard(currentResultData);
 
       } catch (err) {
         alert("An error occurred during screening analysis: " + err.message);
       } finally {
         scanningOverlay.classList.add('hidden');
-        analyzeBtnText.textContent = "Re-analyze Image";
+        analyzeBtnText.textContent = translations[currentLang].btnReanalyze;
         btnAnalyze.disabled = false;
         btnAnalyze.setAttribute('data-active', 'true');
       }
     });
 
-    function displayResults(data) {
-      // Update result fields
-      document.getElementById('resultTitle').textContent = data.title;
+    function renderResultCard(data) {
+      const langContent = data[currentLang];
+
+      document.getElementById('resultTitle').textContent = langContent.title;
       document.getElementById('confidencePercentage').textContent = data.confidence.toFixed(1) + "%";
-      document.getElementById('resultDescription').textContent = data.description;
-      document.getElementById('resultAction').textContent = data.action;
+      document.getElementById('resultDescription').textContent = langContent.description;
+      document.getElementById('resultAction').textContent = langContent.action;
 
       const severityBadge = document.getElementById('severityBadge');
-      severityBadge.textContent = data.severity;
+      severityBadge.textContent = langContent.severity;
       severityBadge.className = `inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${data.severityClass}`;
 
       const iconWrapper = document.getElementById('resultIconWrapper');
@@ -576,36 +751,33 @@
       const resultIcon = document.getElementById('resultIcon');
       resultIcon.setAttribute('data-lucide', data.icon);
 
-      // Populate differential probabilities
+      // Populate differential probabilities with localized disease labels
       const differentialContainer = document.getElementById('differentialList');
       differentialContainer.innerHTML = '';
       data.probabilities.forEach(p => {
         const item = document.createElement('div');
         item.className = "bg-white p-2.5 rounded-lg border border-slate-200 flex flex-col justify-between";
+        const diseaseName = langContent.diseaseLabels[p.key] || p.key;
         item.innerHTML = `
-          <span class="text-slate-500 text-[10px] truncate">${p.name}</span>
+          <span class="text-slate-500 text-[10px] truncate" title="${diseaseName}">${diseaseName}</span>
           <span class="font-bold text-slate-800 text-xs mt-0.5">${p.value.toFixed(1)}%</span>
         `;
         differentialContainer.appendChild(item);
       });
 
-      // Update timestamp
+      // Update timestamp with localized text
       const now = new Date();
-      document.getElementById('analysisTimestamp').textContent = `Screened: ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+      document.getElementById('analysisTimestamp').textContent = `${translations[currentLang].screenedAt} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
 
       // Show result section
       resultSection.classList.remove('hidden');
 
-      // Animate confidence progress bar
+      // Animate progress bar
       setTimeout(() => {
         document.getElementById('confidenceBar').style.width = data.confidence + '%';
       }, 100);
 
-      // Refresh newly injected Lucide icons
       lucide.createIcons();
-
-      // Smooth scroll to results
-      resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   </script>
 </body>
