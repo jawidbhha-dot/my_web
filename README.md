@@ -1,30 +1,24 @@
-# OptiScan AI — Eye Disease Detection Web Application
+﻿# OptiScan AI — Eye Disease Detection Website
 
-A modern, clean, and trustworthy medical-grade Single Page Web Application (SPA) designed for AI-assisted ocular screening and eye disease detection.
-
----
-
-## 🌟 Features Included
-
-- **Medical-Grade Aesthetic**: Soft medical color palette (`#0284C7` teal/blue, `#F8FAFC` slate background, `#10B981` mint accents, `#FFFFFF` pure cards).
-- **Responsive Layout**: Designed for seamless viewing across smartphones, tablets, and desktop workstations.
-- **Interactive Upload Zone**:
-  - Drag-and-drop file upload with animated dashed borders.
-  - Native file picker and mobile camera capture (`accept="image/*"`).
-  - High-res image preview with **Change Image** and **Remove** controls.
-- **Live Laser Scanning Effect**:
-  - Sleek animated scanning line running across the ocular image during inference.
-  - 2-second realistic screening simulation with ocular feature inspection status.
-- **Diagnostic Result Card**:
-  - Detected conditions (e.g., *Normal / Healthy Eye*, *Cataract*, *Conjunctivitis*, *Diabetic Retinopathy*).
-  - Confidence percentage with an animated gradient progress bar.
-  - Clinical observations and recommended next medical actions.
-  - Multiclass differential probability breakdown.
-- **Medical Disclaimer**: Prominent safety banner highlighting that this tool is for preliminary screening only.
-- **Ready Backend Integration**: Pre-commented code block showing where to connect your Python/FastAPI/Flask API endpoint (`fetch('/api/predict')`).
+เว็บไซต์สำหรับตรวจคัดกรองโรคทางสายตาและวิเคราะห์ภาพถ่ายดวงตาเบื้องต้นด้วยระบบ AI
 
 ---
 
-## 🚀 How to Run
+## 🌟 ฟีเจอร์ของเว็บไซต์
 
-Simply double-click or open `index.html` in any modern web browser (Chrome, Edge, Firefox, Safari). No installation or build steps required.
+- **Medical-Grade Clean UI**: ออกแบบสะอาดตา โทนสีมาตรฐานทางการแพทย์ (#0284C7, #F8FAFC, #10B981)
+- **ระบบ 2 ภาษา (Bilingual)**: สลับภาษาไทย 🇹🇭 และภาษาอังกฤษ 🇺🇸 ได้ทันที
+- **อัปโหลดรูปภาพดวงตา**: รองรับทั้งลากวาง (Drag & Drop) และถ่ายรูปจากกล้อง
+- **การจำลองการวิเคราะห์ (AI Screening Simulation)**: แอนิเมชันเลเซอร์สแกนและประมวลผล 2 วินาที
+- **การ์ดแสดงผลการตรวจ**:
+  - ระบุชื่อโรคและความเสี่ยง (ดวงตาปกติ, ต้อกระจก, เยื่อบุตาอักเสบ, เบาหวานขึ้นจอประสาทตา)
+  - แถบเปอร์เซ็นต์ความมั่นใจ (Confidence Score)
+  - ข้อสังเกตและคำแนะนำเบื้องต้น
+- **ข้อจำกัดความรับผิดชอบทางการแพทย์ (Medical Disclaimer)**
+
+---
+
+## 🌐 ลิงก์เข้าใช้งานเว็บไซต์
+
+เปิดใช้งานผ่านเบราว์เซอร์ได้ทันทีที่:
+**https://jawidbhha-dot.github.io/my_web/**
