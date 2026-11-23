@@ -148,15 +148,15 @@
           <span data-i18n="badgeScreening">AI คัดกรองแม่นยำ</span>
         </span>
 
-        <!-- PWA Install App Button (Auto-shows on Mobile / Chrome) -->
+        <!-- Download & Install App Button (Always Visible) -->
         <button 
           id="btnInstallPwa"
-          onclick="installPWA()"
-          class="hidden items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all animate-pulse"
-          title="ติดตั้งลงในอุปกรณ์"
+          onclick="openInstallModal()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
+          title="ดาวน์โหลด / ติดตั้งแอปลงเครื่อง"
         >
-          <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i>
-          <span class="hidden xs:inline">ติดตั้งแอป</span>
+          <i data-lucide="download-cloud" class="w-4 h-4"></i>
+          <span>ติดตั้งแอป</span>
         </button>
 
         <!-- Language Switcher Pill Button -->
@@ -590,6 +590,68 @@
       <!-- History List Container -->
       <div id="historyListContainer" class="flex-1 overflow-y-auto space-y-3 pr-1">
         <!-- Rendered by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. INSTALL APP MODAL (ONE-CLICK POPUP) -->
+  <div id="installModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative animate-fadeIn">
+      <button onclick="closeInstallModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-all">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
+          <i data-lucide="download-cloud" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">ติดตั้ง OptiScan AI</h3>
+          <p class="text-xs text-slate-500">เลือกประเภทอุปกรณ์ของคุณเพื่อติดตั้ง</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 pt-2">
+        <!-- Direct Mobile PWA Trigger -->
+        <button 
+          onclick="triggerPWAInstall()" 
+          class="w-full p-4 rounded-2xl border-2 border-emerald-500/30 hover:border-emerald-500 bg-emerald-50/50 hover:bg-emerald-50 flex items-center justify-between transition-all group"
+        >
+          <div class="flex items-center gap-3 text-left">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center group-hover:scale-105 transition-all">
+              <i data-lucide="smartphone" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                ติดตั้งบน มือถือ (Android / iOS)
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-200 text-emerald-800">แนะนำ</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">กดติดตั้งเพื่อเพิ่มไอคอนแอปบนหน้าจอมือถือทันที</p>
+            </div>
+          </div>
+          <i data-lucide="arrow-right" class="w-4 h-4 text-emerald-600 group-hover:translate-x-1 transition-all"></i>
+        </button>
+
+        <!-- Direct Windows EXE Download -->
+        <a 
+          href="https://github.com/jawidbhha-dot/my_web/releases/download/v1.0.0/OptiScanAI-Windows-x64-App.zip" 
+          class="w-full p-4 rounded-2xl border border-slate-200 hover:border-medical-500 bg-slate-50 hover:bg-medical-50/40 flex items-center justify-between transition-all group"
+        >
+          <div class="flex items-center gap-3 text-left">
+            <div class="w-10 h-10 rounded-xl bg-medical-600 text-white flex items-center justify-center group-hover:scale-105 transition-all">
+              <i data-lucide="monitor" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-sm font-bold text-slate-900">ดาวน์โหลดแอปสำหรับ คอมพิวเตอร์</div>
+              <p class="text-xs text-slate-500 mt-0.5">ไฟล์โปรแกรม Windows .exe (ไม่ต้องต่อเน็ต)</p>
+            </div>
+          </div>
+          <i data-lucide="download" class="w-4 h-4 text-medical-600 group-hover:translate-y-0.5 transition-all"></i>
+        </a>
+      </div>
+
+      <div class="mt-4 p-3 rounded-xl bg-slate-100 text-[11px] text-slate-500 leading-relaxed">
+        💡 <strong>คำแนะนำมือถือ:</strong> สำหรับ iPhone ให้แตะปุ่มแชร์ 📤 ด้านล่างแล้วเลือก "เพิ่มไปยังหน้าจอโฮม"
       </div>
     </div>
   </div>
@@ -1518,27 +1580,43 @@
     // ================= PWA INSTALLATION & SERVICE WORKER =================
     let deferredPrompt = null;
     const btnInstallPwa = document.getElementById('btnInstallPwa');
+    const installModal = document.getElementById('installModal');
+
+    function openInstallModal() {
+      if (installModal) {
+        installModal.classList.remove('hidden');
+        lucide.createIcons();
+      }
+    }
+
+    function closeInstallModal() {
+      if (installModal) {
+        installModal.classList.add('hidden');
+      }
+    }
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      if (btnInstallPwa) {
-        btnInstallPwa.classList.remove('hidden');
-        btnInstallPwa.classList.add('inline-flex');
-      }
     });
 
-    async function installPWA() {
-      if (!deferredPrompt) {
-        alert('สำหรับการติดตั้งบน iOS / Safari: ให้กดปุ่มแชร์ (Share) แล้วเลือก "เพิ่มไปยังหน้าจอโฮม (Add to Home Screen)"');
-        return;
+    async function triggerPWAInstall() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          closeInstallModal();
+        }
+        deferredPrompt = null;
+      } else {
+        // Fallback for iOS or when already installed / prompt unavailable
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          alert('📱 สำหรับ iPhone/iPad:\n1. แตะไอคอนแชร์ 📤 ด้านล่าง\n2. เลือก "เพิ่มไปยังหน้าจอโฮม (Add to Home Screen)"');
+        } else {
+          alert('📱 สำหรับ Android:\nหากระบบไม่เด้งหน้าต่าง ให้แตะจุด 3 จุด (⋮) มุมขวาบนของ Chrome แล้วกด "ติดตั้งแอป" หรือ "เพิ่มลงในหน้าจอหลัก"');
+        }
       }
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        btnInstallPwa.classList.add('hidden');
-      }
-      deferredPrompt = null;
     }
 
     window.addEventListener('appinstalled', () => {
