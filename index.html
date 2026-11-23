@@ -1,1 +1,1374 @@
-﻿<!DOCTYPE html> <html lang="th"> <head>   <meta charset="UTF-8">   <meta name="viewport" content="width=device-width, initial-scale=1.0">   <title>OptiScan AI — Ocular Screening & Diagnostic AI</title>      <link rel="preconnect" href="https://fonts.googleapis.com">   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">    <!-- Tailwind CSS CDN -->   <script src="https://cdn.tailwindcss.com"></script>   <script>     tailwind.config = {       theme: {         extend: {           fontFamily: {             sans: ['Sarabun', 'Inter', 'sans-serif'],           },           colors: {             medical: {               50: '#F0F9FF',               100: '#E0F2FE',               200: '#BAE6FD',               300: '#7DD3FC',               400: '#38BDF8',               500: '#0EA5E9',               600: '#0284C7',               700: '#0369A1',               800: '#075985',               900: '#0C4A6E',             },             mint: {               50: '#ECFDF5',               100: '#D1FAE5',               500: '#10B981',               600: '#059669',             }           },           animation: {             'scan': 'scanLine 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',             'fadeIn': 'fadeIn 0.35s ease-out forwards',           },           keyframes: {             scanLine: {               '0%, 100%': { top: '0%' },               '50%': { top: '96%' },             },             fadeIn: {               '0%': { opacity: '0', transform: 'translateY(8px)' },               '100%': { opacity: '1', transform: 'translateY(0)' },             }           }         }       }     }   </script>    <!-- Lucide Icons -->   <script src="https://unpkg.com/lucide@latest"></script>    <style>     .scan-beam {       position: absolute;       left: 0;       right: 0;       height: 3px;       background: linear-gradient(90deg, transparent, #38BDF8, #0284C7, #38BDF8, transparent);       box-shadow: 0 0 16px 3px rgba(56, 189, 248, 0.8), 0 0 30px 6px rgba(2, 132, 199, 0.4);       z-index: 20;     }     .medical-bg-pattern {       background-color: #F8FAFC;       background-image: radial-gradient(#E2E8F0 1px, transparent 1px);       background-size: 24px 24px;     }   </style> </head> <body class="medical-bg-pattern min-h-screen text-slate-800 font-sans flex flex-col justify-between antialiased selection:bg-medical-100 selection:text-medical-800">    <!-- ================= HEADER / NAVBAR ================= -->   <header class="w-full bg-white/85 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 transition-all">     <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">       <!-- Logo + Brand -->       <div class="flex items-center space-x-3">         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-medical-600 to-medical-400 flex items-center justify-center text-white shadow-md shadow-medical-500/20">           <i data-lucide="scan-eye" class="w-5 h-5"></i>         </div>         <div>           <div class="flex items-center space-x-2">             <span class="font-bold text-lg text-slate-900 tracking-tight">OptiScan<span class="text-medical-600">AI</span></span>             <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-medical-50 text-medical-700 border border-medical-200">               <span class="w-1.5 h-1.5 rounded-full bg-medical-500 mr-1.5 animate-pulse"></span>               v2.5 Clin-Grade             </span>           </div>           <p class="text-[11px] text-slate-500 hidden sm:block -mt-0.5" data-i18n="appSubtitle">ระบบตรวจคัดกรองโรคทางสายตาด้วย AI</p>         </div>       </div>        <!-- Action Items: AI Badge + PWA Install + Language Toggle + Auth Buttons -->       <div class="flex items-center space-x-2 sm:space-x-3">         <!-- AI Status Badge -->         <span class="hidden md:inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">           <i data-lucide="activity" class="w-3.5 h-3.5 mr-1.5 text-emerald-500"></i>           <span data-i18n="badgeScreening">AI คัดกรองแม่นยำ</span>         </span>          <!-- Language Switcher Pill Button -->         <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-inner">           <button              type="button"              id="btnLangTh"              onclick="setLanguage('th')"             class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs"           >             🇹🇭 TH           </button>           <button              type="button"              id="btnLangEn"              onclick="setLanguage('en')"             class="px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200"           >             🇺🇸 EN           </button>         </div>          <!-- Auth Navigation Dynamic Block -->         <div id="authNavArea" class="flex items-center space-x-2">           <!-- Logged Out View -->           <button              id="btnOpenLogin"              onclick="openAuthModal('login')"             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-medical-600 text-white hover:bg-medical-700 shadow-xs transition-all"           >             <i data-lucide="log-in" class="w-3.5 h-3.5"></i>             <span data-i18n="navLogin">เข้าสู่ระบบ</span>           </button>            <!-- Logged In View -->           <div id="userProfileNav" class="hidden items-center space-x-2">             <!-- User History Button -->             <button                onclick="openHistoryModal()"               class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all border border-slate-200"               title="ประวัติการตรวจ"             >               <i data-lucide="history" class="w-3.5 h-3.5 text-medical-600"></i>               <span class="hidden sm:inline" data-i18n="navHistory">ประวัติ</span>               <span id="historyCountBadge" class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-medical-500 text-white font-bold">0</span>             </button>              <!-- Admin Panel Button -->             <button                id="btnAdminNav"               onclick="openAdminModal()"               class="hidden items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-xs"               title="แผงควบคุมผู้ดูแลระบบ"             >               <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>               <span class="hidden sm:inline">Admin</span>             </button>              <!-- User Avatar & Dropdown / Logout -->             <div class="relative group">               <button class="flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all">                 <img id="navUserAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="w-6 h-6 rounded-full border border-slate-300">                 <span id="navUserName" class="text-xs font-medium text-slate-700 max-w-[80px] sm:max-w-[120px] truncate">User</span>                 <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>               </button>               <!-- Dropdown -->               <div class="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-slate-100 py-1 hidden group-hover:block hover:block z-50">                 <div class="px-3 py-1.5 border-b border-slate-100 text-[11px] text-slate-500 truncate" id="dropdownUserEmail">user@example.com</div>                 <button onclick="openHistoryModal()" class="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">                   <i data-lucide="file-clock" class="w-3.5 h-3.5 text-medical-600"></i>                   <span data-i18n="navHistory">ประวัติการตรวจ</span>                 </button>                 <button onclick="handleLogout()" class="w-full text-left px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2">                   <i data-lucide="log-out" class="w-3.5 h-3.5"></i>                   <span data-i18n="navLogout">ออกจากระบบ</span>                 </button>               </div>             </div>           </div>         </div>       </div>     </div>   </header>    <!-- ================= MAIN CONTAINER ================= -->   <main class="max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col items-center">          <!-- Hero Section -->     <div class="text-center max-w-xl mx-auto mb-8 sm:mb-10">       <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-medical-50 text-medical-700 border border-medical-200 mb-3 shadow-xs">         <i data-lucide="sparkles" class="w-3.5 h-3.5 text-medical-600"></i>         <span data-i18n="heroPill">ระบบตรวจจับภาพจอประสาทตาและดวงตาอัตโนมัติ</span>       </div>       <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight" data-i18n="heroTitle">         ตรวจคัดกรองโรคตาด้วย AI ทันที       </h1>       <p class="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed" data-i18n="heroDesc">         อัปโหลดภาพถ่ายระยะใกล้ของดวงตา หรือภาพสแกนจอประสาทตา (Fundus) เพื่อวิเคราะห์ความผิดปกติเบื้องต้นได้ภายในไม่กี่วินาที       </p>     </div>      <!-- Main Card Container -->     <div class="w-full bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl shadow-slate-200/50 transition-all duration-300">              <!-- Interactive Upload Drop Zone -->       <div          id="dropZone"          class="relative border-2 border-dashed border-slate-300 hover:border-medical-500 rounded-2xl p-6 sm:p-8 text-center transition-all duration-200 bg-slate-50/60 hover:bg-medical-50/30 cursor-pointer group flex flex-col items-center justify-center min-h-[290px] overflow-hidden"       >         <!-- Hidden File Input -->         <input            type="file"            id="fileInput"            accept="image/*"            capture="environment"           class="hidden"          />          <!-- Empty State UI -->         <div id="uploadPrompt" class="flex flex-col items-center justify-center space-y-4">           <div class="w-16 h-16 rounded-2xl bg-white shadow-md border border-slate-200 flex items-center justify-center text-medical-600 group-hover:scale-105 group-hover:border-medical-300 transition-all duration-200">             <i data-lucide="upload-cloud" class="w-8 h-8"></i>           </div>           <div>             <p class="text-base font-semibold text-slate-800">               <span data-i18n="dropText">ลากไฟล์ภาพดวงตามาวางที่นี่ หรือ</span>               <span class="text-medical-600 font-bold underline decoration-medical-300 underline-offset-2" data-i18n="browseText">เลือกไฟล์</span>             </p>             <p class="text-xs text-slate-500 mt-1" data-i18n="supportText">รองรับไฟล์ภาพ JPG, PNG, DICOM ความละเอียดสูง (สูงสุด 15MB)</p>           </div>            <div class="flex items-center gap-2 pt-2">             <button                type="button"                onclick="event.stopPropagation(); document.getElementById('fileInput').click();"               class="inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-300 shadow-xs hover:bg-slate-50 hover:text-medical-600 hover:border-medical-300 transition-all"             >               <i data-lucide="camera" class="w-4 h-4 mr-1.5 text-medical-600"></i>               <span data-i18n="btnTakeOrUpload">เพิ่มรูปภาพ / ถ่ายภาพด้วยกล้อง</span>             </button>           </div>            <!-- Quick Guidelines Pill -->           <div class="flex flex-wrap items-center justify-center gap-3 pt-3 text-[11px] text-slate-500">             <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipLight">แสงสว่างเพียงพอ</span></span>             <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipFocus">ภาพคมชัด ไม่เบลอ</span></span>             <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipGlare">ไม่มีแสงสะท้อนจ้า</span></span>           </div>         </div>          <!-- Image Preview Container -->         <div id="previewContainer" class="hidden relative w-full flex-col items-center justify-center">           <div class="relative rounded-xl overflow-hidden max-h-80 shadow-md border border-slate-200">             <img id="imagePreview" src="#" alt="ภาพดวงตาพรีวิว" class="w-full object-contain rounded-xl max-h-80" />                          <!-- Scanning Animation Overlay -->             <div id="scanningOverlay" class="hidden absolute inset-0 bg-slate-900/40 backdrop-blur-[1.5px] flex flex-col items-center justify-center">               <div class="scan-beam animate-scan"></div>               <div class="bg-white/95 px-4 py-2.5 rounded-2xl shadow-xl flex items-center space-x-2.5 border border-medical-200/50">                 <i data-lucide="loader-2" class="w-4 h-4 text-medical-600 animate-spin"></i>                 <span class="text-xs font-semibold text-slate-700 tracking-wide" data-i18n="analyzingText">กำลังวิเคราะห์โครงสร้างกระจกตาและเส้นเลือดจอประสาทตา...</span>               </div>             </div>           </div>            <!-- Quick Remove Image Action -->           <button              type="button"              id="btnRemoveImage"              onclick="event.stopPropagation(); resetUploadedImage();"             class="mt-3.5 inline-flex items-center text-xs font-medium text-slate-500 hover:text-rose-600 transition-colors"           >             <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i>             เปลี่ยนหรือนำภาพนี้ออก           </button>         </div>       </div>        <!-- Action Button -->       <div class="mt-6 flex flex-col items-center">         <button            type="button"            id="btnAnalyze"            disabled           class="w-full sm:w-auto min-w-[240px] px-8 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed bg-medical-600 text-white hover:bg-medical-700 hover:shadow-medical-600/25 active:scale-[0.99]"         >           <i data-lucide="cpu" class="w-4 h-4"></i>           <span id="analyzeBtnText" data-i18n="btnAnalyze">เริ่มวิเคราะห์ภาพถ่าย</span>         </button>       </div>        <!-- Result Card -->       <div id="resultSection" class="hidden mt-8 pt-8 border-t border-slate-200 animate-fadeIn">         <div class="flex items-center justify-between mb-4">           <div class="flex items-center space-x-2">             <i data-lucide="clipboard-check" class="w-5 h-5 text-medical-600"></i>             <h3 class="font-bold text-base text-slate-900" data-i18n="resultSectionHeading">ผลการวิเคราะห์และคัดกรองเบื้องต้น</h3>           </div>           <span id="analysisTimestamp" class="text-[11px] text-slate-400"></span>         </div>          <!-- Outcome Card -->         <div class="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200/90 space-y-4">           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/70">             <div class="flex items-start space-x-3.5">               <div id="resultIconWrapper" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0">                 <i id="resultIcon" data-lucide="check-circle" class="w-6 h-6"></i>               </div>               <div>                 <span class="text-xs font-medium text-slate-500 block mb-0.5" data-i18n="detectedConditionLabel">สภาวะที่ตรวจพบ</span>                 <h4 id="resultTitle" class="text-lg font-bold text-slate-900 leading-tight">ตาปกติ (Normal)</h4>                 <div id="severityBadge" class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">ความเสี่ยงต่ำ</div>               </div>             </div>              <!-- Confidence Metric -->             <div class="text-left sm:text-right shrink-0 bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-slate-200">               <span class="text-xs font-medium text-slate-500 block mb-0.5" data-i18n="confidenceLabel">ระดับความมั่นใจของโมเดล</span>               <span id="confidencePercentage" class="text-2xl font-black text-slate-900">95.4%</span>             </div>           </div>            <!-- Progress Bar -->           <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">             <div                id="confidenceBar"                class="h-2.5 rounded-full bg-medical-600 transition-all duration-1000 ease-out"                style="width: 0%"             ></div>           </div>            <!-- Details & Recommendations -->           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">             <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">               <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">                 <i data-lucide="book-open" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>                 <span data-i18n="clinicalObservationHeading">ข้อสังเกตทางคลินิก</span>               </h4>               <p id="resultDescription" class="text-xs leading-relaxed text-slate-600">-</p>             </div>              <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">               <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">                 <i data-lucide="stethoscope" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>                 <span data-i18n="recommendedActionHeading">คำแนะนำเบื้องต้น</span>               </h4>               <p id="resultAction" class="text-xs leading-relaxed text-slate-600">-</p>             </div>           </div>            <!-- Differential Analysis Breakdown -->           <div class="pt-2">             <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider block mb-2" data-i18n="differentialHeading">ความน่าจะเป็นจำแนกตามประเภทโรค (Multiclass Probabilities)</span>             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs" id="differentialList"></div>           </div>         </div>       </div>     </div>   </main>    <!-- ================= MEDICAL DISCLAIMER FOOTER ================= -->   <footer class="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-8 pt-4">     <div class="rounded-2xl bg-amber-50/90 border border-amber-200/80 p-4 flex items-start space-x-3 shadow-xs">       <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>       <div class="text-xs text-amber-900/90 leading-relaxed">         <strong class="font-semibold text-amber-950" data-i18n="disclaimerLabel">ข้อจำกัดความรับผิดชอบทางการแพทย์:</strong>          <span data-i18n="disclaimerBody">           OptiScan AI ถูกออกแบบมาเพื่อการคัดกรองเบื้องต้นและการศึกษาเท่านั้น ระบบนี้ไม่สามารถใช้แทนการวินิจฉัย การตรวจรักษา หรือแผนการรักษาของจักษุแพทย์ผู้เชี่ยวชาญได้ หากท่านมีอาการปวดตาเฉียบพลัน ตาแดงผิดปกติ หรือสูญเสียการมองเห็น กรุณาพบแพทย์เฉพาะทางหรือเข้ารับการตรวจที่โรงพยาบาลทันที         </span>       </div>     </div>     <div class="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center gap-2">       <div class="flex items-center gap-1.5 text-xs font-medium text-slate-500">         <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i>         <span>คณะผู้จัดทำ</span>       </div>       <div class="flex flex-wrap items-center justify-center gap-2 text-xs">         <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 border border-slate-200/80 text-slate-700 shadow-2xs font-medium">           นายศุภวิชญ์ จันทร์สุกรี         </span>         <span class="text-slate-300 hidden sm:inline">•</span>         <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 border border-slate-200/80 text-slate-700 shadow-2xs font-medium">           นายปภังกร กลิ่นมะละ         </span>         <span class="text-slate-300 hidden sm:inline">•</span>         <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 border border-slate-200/80 text-slate-700 shadow-2xs font-medium">           นายเตโชดม สงเคราะห์สุข         </span>       </div>     </div>     <p class="text-center text-[11px] text-slate-400 mt-4">       &copy; 2026 OptiScan AI Health Technologies. <span data-i18n="footerSub">ระบบทดสอบคัดกรองภาพถ่ายทางการแพทย์มาตรฐาน</span>     </p>   </footer>    <!-- ================= MODALS: AUTH / HISTORY / ADMIN ================= -->    <!-- 1. AUTH MODAL -->   <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden">     <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative animate-fadeIn">       <button onclick="closeAuthModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-all">         <i data-lucide="x" class="w-5 h-5"></i>       </button>        <div class="text-center mb-6">         <div class="w-12 h-12 mx-auto rounded-2xl bg-medical-50 text-medical-600 flex items-center justify-center mb-3">           <i data-lucide="lock" class="w-6 h-6"></i>         </div>         <h3 id="authModalTitle" class="text-xl font-bold text-slate-900">เข้าสู่ระบบ OptiScan AI</h3>         <p id="authModalSubtitle" class="text-xs text-slate-500 mt-1">เข้าสู่ระบบเพื่อบันทึกและดูประวัติผลการตรวจสายตา</p>       </div>        <button          type="button"          onclick="handleGoogleAuth()"         class="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs shadow-xs transition-all mb-4"       >         <svg class="w-4 h-4" viewBox="0 0 24 24">           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>           <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>           <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>         </svg>         <span>ดำเนินการต่อด้วยบัญชี Google</span>       </button>        <div class="relative flex items-center justify-center my-4">         <div class="border-t border-slate-200 w-full"></div>         <span class="bg-white px-2 text-[11px] text-slate-400 absolute">หรือใช้อีเมล</span>       </div>        <form id="authForm" onsubmit="handleEmailAuth(event)" class="space-y-3">         <div id="authNameField" class="hidden">           <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ-นามสกุล</label>           <input type="text" id="authNameInput" placeholder="ระบุชื่อของคุณ" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500">         </div>         <div>           <label class="block text-xs font-semibold text-slate-700 mb-1">อีเมล</label>           <input type="email" id="authEmailInput" required placeholder="name@example.com" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500">         </div>         <div>           <label class="block text-xs font-semibold text-slate-700 mb-1">รหัสผ่าน</label>           <input type="password" id="authPassInput" required minlength="6" placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500">         </div>          <button            type="submit"            id="btnSubmitAuth"           class="w-full py-2.5 px-4 rounded-xl bg-medical-600 hover:bg-medical-700 text-white font-semibold text-xs shadow-md shadow-medical-500/20 transition-all mt-4"         >           เข้าสู่ระบบ         </button>       </form>        <div class="text-center mt-4 text-xs text-slate-500">         <span id="authToggleQuestion">ยังไม่มีบัญชีใช่หรือไม่?</span>         <button type="button" onclick="toggleAuthMode()" id="btnToggleAuthMode" class="text-medical-600 font-semibold hover:underline ml-1">           สมัครสมาชิกใหม่         </button>       </div>        <div class="mt-4 pt-3 border-t border-slate-100 text-[10px] text-slate-400 text-center">         💡 สำหรับทดสอบ Admin: เข้าด้วย <b>admin@optiscan.ai</b> (รหัสผ่านใดก็ได้ 6 ตัวขึ้นไป)       </div>     </div>   </div>    <!-- 2. USER HISTORY MODAL -->   <div id="historyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden">     <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative animate-fadeIn flex flex-col max-h-[85vh]">       <button onclick="closeHistoryModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-all">         <i data-lucide="x" class="w-5 h-5"></i>       </button>        <div class="flex items-center gap-3 mb-4">         <div class="w-10 h-10 rounded-xl bg-medical-50 text-medical-600 flex items-center justify-center">           <i data-lucide="file-clock" class="w-5 h-5"></i>         </div>         <div>           <h3 class="text-lg font-bold text-slate-900">ประวัติการตรวจสุขภาพตาของฉัน</h3>           <p class="text-xs text-slate-500" id="historyUserSubtitle">บันทึกผลการคัดกรองเฉพาะบัญชีนี้</p>         </div>       </div>        <div id="historyListContainer" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>     </div>   </div>    <!-- 3. ADMIN DASHBOARD MODAL -->   <div id="adminModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden">     <div class="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative animate-fadeIn flex flex-col max-h-[90vh]">       <button onclick="closeAdminModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-all">         <i data-lucide="x" class="w-5 h-5"></i>       </button>        <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">         <div class="flex items-center gap-3">           <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">             <i data-lucide="shield-check" class="w-6 h-6"></i>           </div>           <div>             <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">               แผงควบคุมผู้ดูแลระบบ (Admin Overview)               <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">MASTER ADMIN</span>             </h3>             <p class="text-xs text-slate-500">ตรวจสอบและติดตามข้อมูลการสแกนและผู้ใช้ทั้งหมดในระบบ</p>           </div>         </div>         <button onclick="exportDataToCSV()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">           <i data-lucide="download" class="w-3.5 h-3.5"></i>           <span>ส่งออก CSV</span>         </button>       </div>        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">           <span class="text-[11px] font-semibold text-slate-400 block mb-1">ผู้ใช้ทั้งหมด</span>           <span id="statTotalUsers" class="text-2xl font-black text-slate-800">0</span>         </div>         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">           <span class="text-[11px] font-semibold text-slate-400 block mb-1">การสแกนทั้งหมด</span>           <span id="statTotalScans" class="text-2xl font-black text-medical-600">0</span>         </div>         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">           <span class="text-[11px] font-semibold text-slate-400 block mb-1">ผลปกติ (Healthy)</span>           <span id="statNormalScans" class="text-2xl font-black text-emerald-600">0</span>         </div>         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">           <span class="text-[11px] font-semibold text-slate-400 block mb-1">พบความผิดปกติ</span>           <span id="statAbnormalScans" class="text-2xl font-black text-amber-600">0</span>         </div>       </div>        <div class="flex items-center justify-between mb-3">         <div class="relative w-full max-w-xs">           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>           <input              type="text"              id="adminSearchInput"              oninput="renderAdminTable()"              placeholder="ค้นหาชื่อ, อีเมล, ผลตรวจ..."              class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500"           >         </div>         <span class="text-xs text-slate-400 ml-2" id="adminTableCountText">แสดง 0 รายการ</span>       </div>        <div class="flex-1 overflow-y-auto border border-slate-200 rounded-2xl overflow-hidden">         <table class="w-full text-left text-xs text-slate-600">           <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200 sticky top-0">             <tr>               <th class="py-3 px-4">วัน-เวลา</th>               <th class="py-3 px-4">ผู้ตรวจ (User)</th>               <th class="py-3 px-4">ผลการวินิจฉัย</th>               <th class="py-3 px-4 text-center">ความมั่นใจ</th>               <th class="py-3 px-4 text-center">รูปพรีวิว</th>               <th class="py-3 px-4 text-right">จัดการ</th>             </tr>           </thead>           <tbody id="adminScansTableBody" class="divide-y divide-slate-100"></tbody>         </table>       </div>     </div>   </div>    <!-- ================= CLIENT APPLICATION LOGIC ================= -->   <script>     const translations = {       th: {         appSubtitle: "ระบบตรวจคัดกรองโรคทางสายตาด้วย AI",         badgeScreening: "AI คัดกรองแม่นยำ",         heroPill: "ระบบตรวจจับภาพจอประสาทตาและดวงตาอัตโนมัติ",         heroTitle: "ตรวจคัดกรองโรคตาด้วย AI ทันที",         heroDesc: "อัปโหลดภาพถ่ายระยะใกล้ของดวงตา หรือภาพสแกนจอประสาทตา (Fundus) เพื่อวิเคราะห์ความผิดปกติเบื้องต้นได้ภายในไม่กี่วินาที",         dropText: "ลากไฟล์ภาพดวงตามาวางที่นี่ หรือ",         browseText: "เลือกไฟล์",         supportText: "รองรับไฟล์ภาพ JPG, PNG, DICOM ความละเอียดสูง (สูงสุด 15MB)",         btnTakeOrUpload: "เพิ่มรูปภาพ / ถ่ายภาพด้วยกล้อง",         tipLight: "แสงสว่างเพียงพอ",         tipFocus: "ภาพคมชัด ไม่เบลอ",         tipGlare: "ไม่มีแสงสะท้อนจ้า",         analyzingText: "กำลังวิเคราะห์โครงสร้างกระจกตาและเส้นเลือดจอประสาทตา...",         btnAnalyze: "เริ่มวิเคราะห์ภาพถ่าย",         btnReanalyze: "วิเคราะห์ภาพใหม่อีกครั้ง",         btnScanning: "กำลังวิเคราะห์...",         resultSectionHeading: "ผลการวิเคราะห์และคัดกรองเบื้องต้น",         detectedConditionLabel: "สภาวะที่ตรวจพบ",         confidenceLabel: "ระดับความมั่นใจของโมเดล",         clinicalObservationHeading: "ข้อสังเกตทางคลินิก",         recommendedActionHeading: "คำแนะนำเบื้องต้น",         differentialHeading: "ความน่าจะเป็นจำแนกตามประเภทโรค (Multiclass Probabilities)",         disclaimerLabel: "ข้อจำกัดความรับผิดชอบทางการแพทย์:",         disclaimerBody: "OptiScan AI ถูกออกแบบมาเพื่อการคัดกรองเบื้องต้นและการศึกษาเท่านั้น ระบบนี้ไม่สามารถใช้แทนการวินิจฉัย การตรวจรักษา หรือแผนการรักษาของจักษุแพทย์ผู้เชี่ยวชาญได้ หากท่านมีอาการปวดตาเฉียบพลัน ตาแดงผิดปกติ หรือสูญเสียการมองเห็น กรุณาพบแพทย์เฉพาะทางหรือเข้ารับการตรวจที่โรงพยาบาลทันที",         footerSub: "ระบบทดสอบคัดกรองภาพถ่ายทางการแพทย์มาตรฐาน",         screenedAt: "เวลาที่ตรวจ:",         invalidFile: "กรุณาเลือกไฟล์ภาพที่ถูกต้อง (JPEG, PNG, WebP)",         navLogin: "เข้าสู่ระบบ",         navHistory: "ประวัติ",         navLogout: "ออกจากระบบ"       },       en: {         appSubtitle: "Ocular Deep-Learning Diagnostics",         badgeScreening: "AI-Assisted Screening",         heroPill: "Automated Computer Vision Screening",         heroTitle: "Instant AI Eye Screening",         heroDesc: "Upload a clear close-up photograph of the anterior eye or a fundus retinal scan to detect common pathologies within seconds.",         dropText: "Drag & drop your eye image here, or",         browseText: "browse",         supportText: "Supports high-res JPG, PNG, DICOM-exported formats (up to 15MB)",         btnTakeOrUpload: "Add Image / Take Photo",         tipLight: "Good Lighting",         tipFocus: "Sharp Focus",         tipGlare: "No Glare",         analyzingText: "Analyzing ocular features & retinal markers...",         btnAnalyze: "Analyze Image",         btnReanalyze: "Re-analyze Image",         btnScanning: "Scanning Image...",         resultSectionHeading: "Diagnostic Inference Result",         detectedConditionLabel: "Detected Classification",         confidenceLabel: "Model Confidence",         clinicalObservationHeading: "Clinical Observation",         recommendedActionHeading: "Recommended Action",         differentialHeading: "Differential Multiclass Probabilities",         disclaimerLabel: "Medical Disclaimer:",         disclaimerBody: "OptiScan AI is designed solely for informational, screening, and research purposes. This tool does not provide definitive medical diagnoses, clinical determinations, or treatment plans. If you experience vision loss, acute eye pain, sudden redness, or visual disturbances, consult a certified ophthalmologist or emergency care immediately.",         footerSub: "Compliant with synthetic medical imaging test standards.",         screenedAt: "Screened:",         invalidFile: "Please select a valid image file (JPEG, PNG, WebP).",         navLogin: "Sign In",         navHistory: "History",         navLogout: "Sign Out"       }     };      const conditionsData = [       {         id: "normal",         th: {           title: "ตาปกติ / สุขภาพดวงตาสมบูรณ์",           severity: "ความเสี่ยงต่ำมาก",           description: "ไม่พบการขุ่นมัวของเลนส์ตา ไม่พบรอยโรคบริเวณจุดรับภาพ (Macula) เส้นเลือดจอประสาทตามีการกระจายตัวที่สมบูรณ์เป็นปกติ",           action: "ควรตรวจสุขภาพตาเป็นประจำปีละ 1 ครั้ง และสวมแว่นกันแดดเมื่อต้องสัมผัสรังสี UV ต่อเนื่องเป็นเวลานาน",           diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }         },         en: {           title: "Normal / Healthy Ocular Structure",           severity: "Low Risk",           description: "No signs of crystalline lens opacification, maculopathy, microaneurysms, or conjunctival inflammation detected. The corneal contour and retinal vasculature are clear and within physiological parameters.",           action: "Maintain regular annual ophthalmology wellness checkups. Ensure UV protection with sunglasses during outdoor exposure.",           diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }         },         severityClass: "bg-emerald-100 text-emerald-800",         icon: "check-circle",         iconBg: "bg-emerald-100 text-emerald-600",         confidence: 96.2,         probabilities: [           { key: "normal", value: 96.2 },           { key: "cataract", value: 1.8 },           { key: "conjunctivitis", value: 1.2 },           { key: "retinopathy", value: 0.8 }         ]       },       {         id: "cataract",         th: {           title: "สงสัยภาวะต้อกระจก (Cataract)",           severity: "ความเสี่ยงปานกลาง",           description: "พบความขุ่นมัวและสูญเสียความโปร่งใสในบริเวณเลนส์แก้วตา ซึ่งอาจลดทอนการส่องผ่านของแสงไปยังจอประสาทตา ทำให้สายตามัว",           action: "แนะนำให้นัดหมายตรวจละเอียดด้วยเครื่อง Slit-lamp กับจักษุแพทย์ เพื่อประเมินระดับความขุ่นและวางแผนแนวทางการรักษา",           diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }         },         en: {           title: "Suspected Cataract Formation",           severity: "Moderate Risk",           description: "Noticeable clouding and loss of transparency observed in the natural crystalline lens region, potentially affecting light transmission to the retina.",           action: "Schedule a comprehensive slit-lamp examination with an eye specialist to evaluate visual acuity degradation and surgical staging options.",           diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }         },         severityClass: "bg-amber-100 text-amber-800",         icon: "alert-triangle",         iconBg: "bg-amber-100 text-amber-600",         confidence: 93.8,         probabilities: [           { key: "cataract", value: 93.8 },           { key: "normal", value: 3.4 },           { key: "retinopathy", value: 1.6 },           { key: "conjunctivitis", value: 1.2 }         ]       },       {         id: "conjunctivitis",         th: {           title: "เยื่อบุตาอักเสบ / ตาแดง (Conjunctivitis)",           severity: "ความเสี่ยงปานกลาง",           description: "พบการขยายตัวและคั่งของหลอดเลือดฝอยบริเวณเยื่อบุตาขาว สอดคล้องกับภาวะเยื่อบุตาอักเสบเฉียบพลัน (จากภูมิแพ้ เชื้อไวรัส หรือแบคทีเรีย)",           action: "งดการขยี้ตาและถอดคอนแทคเลนส์ทันที ควรปรึกษาแพทย์หรือเภสัชกรเพื่อรับยาหยอดตาต้านการอักเสบที่ถูกต้อง",           diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }         },         en: {           title: "Conjunctival Hyperemia / Conjunctivitis",           severity: "Mild to Moderate",           description: "Superficial vascular engorgement and dilation of conjunctival microvessels detected. Features are consistent with acute conjunctivitis (allergic, viral, or bacterial).",           action: "Avoid rubbing eyes and contact lens wear. Consult an optometrist or physician for appropriate topical anti-inflammatory or antibacterial eyedrops.",           diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }         },         severityClass: "bg-amber-100 text-amber-800",         icon: "alert-circle",         iconBg: "bg-amber-100 text-amber-600",         confidence: 91.5,         probabilities: [           { key: "conjunctivitis", value: 91.5 },           { key: "normal", value: 4.8 },           { key: "cataract", value: 2.1 },           { key: "retinopathy", value: 1.6 }         ]       },       {         id: "retinopathy",         th: {           title: "พบความผิดปกติที่อาจสัมพันธ์กับเบาหวานขึ้นจอประสาทตา (Diabetic Retinopathy)",           severity: "ความเสี่ยงสูง",           description: "ตรวจพบร่องรอยการเปลี่ยนแปลงของโครงสร้างเส้นเลือดจอประสาทตา เช่น หลอดเลือดโป่งพองขนาดเล็ก (Microaneurysms) หรือมีจุดเลือดออกกระจายตัว",           action: "ควรพบจักษุแพทย์เพื่อทำการขยายม่านตาตรวจจอประสาทตา (Dilated Eye Exam) อย่างละเอียดโดยเร็ว และควบคุมระดับน้ำตาลในเลือดอย่างเคร่งครัด",           diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }         },         en: {           title: "Signs of Diabetic Retinopathy",           severity: "Elevated Risk",           description: "Microvascular anomalies detected, including microaneurysms, blot hemorrhages, and potential hard exudates near the posterior pole of the retina.",           action: "Urgent dilated retinal examination and Optical Coherence Tomography (OCT) recommended. Coordinate with an endocrinologist for tight glycemic control.",           diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }         },         severityClass: "bg-rose-100 text-rose-800",         icon: "activity",         iconBg: "bg-rose-100 text-rose-600",         confidence: 89.7,         probabilities: [           { key: "retinopathy", value: 89.7 },           { key: "normal", value: 5.3 },           { key: "cataract", value: 3.0 },           { key: "conjunctivitis", value: 2.0 }         ]       }     ];      let currentLang = 'th';     let currentResultData = null;     let currentFile = null;      // ================= CLIENT-SIDE BACKEND & AUTH SYSTEM =================     const ADMIN_EMAILS = ['admin@optiscan.ai', 'jawidbhha@gmail.com'];      function getStoredUsers() {       const users = localStorage.getItem('optiscan_users');       return users ? JSON.parse(users) : [         { id: 'u_admin', name: 'Master Administrator', email: 'admin@optiscan.ai', role: 'admin', provider: 'email', createdAt: '2026-11-20T10:00:00Z' },         { id: 'u_demo', name: 'ทดสอบ ผู้ใช้งาน', email: 'user@example.com', role: 'user', provider: 'google', createdAt: '2026-11-22T08:30:00Z' }       ];     }      function saveStoredUsers(users) {       localStorage.setItem('optiscan_users', JSON.stringify(users));     }      function getStoredScans() {       const scans = localStorage.getItem('optiscan_scans');       return scans ? JSON.parse(scans) : [         {           id: 'scan_1',           userId: 'u_demo',           userName: 'ทดสอบ ผู้ใช้งาน',           userEmail: 'user@example.com',           conditionId: 'cataract',           conditionTitle: 'สงสัยภาวะต้อกระจก (Cataract)',           confidence: 93.8,           severity: 'ความเสี่ยงปานกลาง',           severityClass: 'bg-amber-100 text-amber-800',           timestamp: new Date(Date.now() - 86400000).toLocaleString('th-TH'),           previewImg: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=100&auto=format&fit=crop&q=60'         },         {           id: 'scan_2',           userId: 'u_demo',           userName: 'ทดสอบ ผู้ใช้งาน',           userEmail: 'user@example.com',           conditionId: 'normal',           conditionTitle: 'ตาปกติ / สุขภาพดวงตาสมบูรณ์',           confidence: 96.2,           severity: 'ความเสี่ยงต่ำมาก',           severityClass: 'bg-emerald-100 text-emerald-800',           timestamp: new Date(Date.now() - 3600000).toLocaleString('th-TH'),           previewImg: 'https://images.unsplash.com/photo-1514415008039-efa173293080?w=100&auto=format&fit=crop&q=60'         }       ];     }      function saveStoredScans(scans) {       localStorage.setItem('optiscan_scans', JSON.stringify(scans));     }      let currentUser = JSON.parse(localStorage.getItem('optiscan_session') || 'null');     let authMode = 'login';      function initAuth() {       updateAuthUI();     }      function updateAuthUI() {       const btnOpenLogin = document.getElementById('btnOpenLogin');       const userProfileNav = document.getElementById('userProfileNav');       const navUserName = document.getElementById('navUserName');       const dropdownUserEmail = document.getElementById('dropdownUserEmail');       const navUserAvatar = document.getElementById('navUserAvatar');       const btnAdminNav = document.getElementById('btnAdminNav');       const historyCountBadge = document.getElementById('historyCountBadge');        if (currentUser) {         btnOpenLogin.classList.add('hidden');         userProfileNav.classList.remove('hidden');         userProfileNav.classList.add('flex');         navUserName.textContent = currentUser.name || currentUser.email.split('@')[0];         dropdownUserEmail.textContent = currentUser.email;         navUserAvatar.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name || currentUser.email)}`;          if (currentUser.role === 'admin' || ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) {           btnAdminNav.classList.remove('hidden');           btnAdminNav.classList.add('inline-flex');         } else {           btnAdminNav.classList.add('hidden');           btnAdminNav.classList.remove('inline-flex');         }          const allScans = getStoredScans();         const myScans = allScans.filter(s => s.userId === currentUser.id || s.userEmail === currentUser.email);         historyCountBadge.textContent = myScans.length;       } else {         btnOpenLogin.classList.remove('hidden');         userProfileNav.classList.add('hidden');         userProfileNav.classList.remove('flex');         btnAdminNav.classList.add('hidden');         btnAdminNav.classList.remove('inline-flex');       }       lucide.createIcons();     }      function openAuthModal(mode = 'login') {       authMode = mode;       const modal = document.getElementById('authModal');       const title = document.getElementById('authModalTitle');       const subtitle = document.getElementById('authModalSubtitle');       const nameField = document.getElementById('authNameField');       const submitBtn = document.getElementById('btnSubmitAuth');       const toggleQuestion = document.getElementById('authToggleQuestion');       const toggleBtn = document.getElementById('btnToggleAuthMode');        if (mode === 'register') {         title.textContent = 'สมัครสมาชิกใหม่';         subtitle.textContent = 'สร้างบัญชีผู้ใช้งานเพื่อบันทึกประวัติการสแกนตา';         nameField.classList.remove('hidden');         submitBtn.textContent = 'สร้างบัญชีผู้ใช้';         toggleQuestion.textContent = 'มีบัญชีอยู่แล้วใช่ไหม?';         toggleBtn.textContent = 'เข้าสู่ระบบ';       } else {         title.textContent = 'เข้าสู่ระบบ OptiScan AI';         subtitle.textContent = 'เข้าสู่ระบบเพื่อบันทึกและดูประวัติผลการตรวจสายตา';         nameField.classList.add('hidden');         submitBtn.textContent = 'เข้าสู่ระบบ';         toggleQuestion.textContent = 'ยังไม่มีบัญชีใช่หรือไม่?';         toggleBtn.textContent = 'สมัครสมาชิกใหม่';       }        modal.classList.remove('hidden');       lucide.createIcons();     }      function closeAuthModal() {       document.getElementById('authModal').classList.add('hidden');     }      function toggleAuthMode() {       openAuthModal(authMode === 'login' ? 'register' : 'login');     }      function handleGoogleAuth() {       const defaultEmail = prompt('เข้าสู่ระบบด้วย Google Account (ใส่อีเมลของคุณ):', 'user.google@gmail.com');       if (!defaultEmail) return;        const users = getStoredUsers();       let user = users.find(u => u.email.toLowerCase() === defaultEmail.toLowerCase());       if (!user) {         user = {           id: 'u_' + Date.now(),           name: defaultEmail.split('@')[0],           email: defaultEmail,           role: ADMIN_EMAILS.includes(defaultEmail.toLowerCase()) ? 'admin' : 'user',           provider: 'google',           createdAt: new Date().toISOString()         };         users.push(user);         saveStoredUsers(users);       }        currentUser = user;       localStorage.setItem('optiscan_session', JSON.stringify(currentUser));       closeAuthModal();       updateAuthUI();       alert(`ยินดีต้อนรับคุณ ${currentUser.name}! เข้าสู่ระบบสำเร็จแล้ว`);     }      function handleEmailAuth(event) {       event.preventDefault();       const email = document.getElementById('authEmailInput').value.trim();       const pass = document.getElementById('authPassInput').value;       const name = document.getElementById('authNameInput').value.trim();        const users = getStoredUsers();        if (authMode === 'register') {         const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());         if (existing) {           alert('อีเมลนี้ถูกลงทะเบียนไว้แล้ว กรุณาเข้าสู่ระบบ');           return;         }          const newUser = {           id: 'u_' + Date.now(),           name: name || email.split('@')[0],           email: email,           role: ADMIN_EMAILS.includes(email.toLowerCase()) ? 'admin' : 'user',           provider: 'email',           createdAt: new Date().toISOString()         };         users.push(newUser);         saveStoredUsers(users);         currentUser = newUser;       } else {         let user = users.find(u => u.email.toLowerCase() === email.toLowerCase());         if (!user) {           user = {             id: 'u_' + Date.now(),             name: email.split('@')[0],             email: email,             role: ADMIN_EMAILS.includes(email.toLowerCase()) ? 'admin' : 'user',             provider: 'email',             createdAt: new Date().toISOString()           };           users.push(user);           saveStoredUsers(users);         }         currentUser = user;       }        localStorage.setItem('optiscan_session', JSON.stringify(currentUser));       closeAuthModal();       updateAuthUI();       alert(`ยินดีต้อนรับ ${currentUser.name}! เข้าสู่ระบบเรียบร้อย`);     }      function handleLogout() {       if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {         currentUser = null;         localStorage.removeItem('optiscan_session');         updateAuthUI();       }     }      // ================= RECORD SCAN HISTORY =================     function recordScanHistory(resultData, previewUrl) {       const scans = getStoredScans();       const newScan = {         id: 'scan_' + Date.now(),         userId: currentUser ? currentUser.id : 'guest',         userName: currentUser ? currentUser.name : 'บุคคลทั่วไป (Guest)',         userEmail: currentUser ? currentUser.email : 'guest@device.local',         conditionId: resultData.id,         conditionTitle: resultData[currentLang].title,         confidence: resultData.confidence,         severity: resultData[currentLang].severity,         severityClass: resultData.severityClass,         timestamp: new Date().toLocaleString('th-TH'),         previewImg: previewUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=100&auto=format&fit=crop&q=60'       };        scans.unshift(newScan);       saveStoredScans(scans);       updateAuthUI();     }      // ================= USER HISTORY MODAL LOGIC =================     function openHistoryModal() {       if (!currentUser) {         openAuthModal('login');         return;       }        const modal = document.getElementById('historyModal');       const listContainer = document.getElementById('historyListContainer');       const subtitle = document.getElementById('historyUserSubtitle');       subtitle.textContent = `บันทึกผลการคัดกรองของ ${currentUser.name} (${currentUser.email})`;        const scans = getStoredScans().filter(s => s.userId === currentUser.id || s.userEmail === currentUser.email);        if (scans.length === 0) {         listContainer.innerHTML = `           <div class="text-center py-12 text-slate-400">             <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>             <p class="text-xs">ยังไม่มีประวัติการตรวจคัดกรอง</p>             <p class="text-[11px] text-slate-400 mt-1">ลองอัปโหลดภาพดวงตาเพื่อเริ่มสแกนผลครั้งแรกได้เลย</p>           </div>         `;       } else {         listContainer.innerHTML = scans.map(s => `           <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-200/80 transition-all flex items-center justify-between gap-3">             <div class="flex items-center gap-3">               <img src="${s.previewImg}" class="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-2xs">               <div>                 <div class="flex items-center gap-2">                   <span class="font-bold text-xs text-slate-800">${s.conditionTitle}</span>                   <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.severityClass}">${s.severity}</span>                 </div>                 <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">                   <span>ความแม่นยำ: <b>${s.confidence}%</b></span>                   <span>•</span>                   <span><i data-lucide="calendar" class="w-3 h-3 inline mr-0.5"></i>${s.timestamp}</span>                 </div>               </div>             </div>             <button onclick="deleteScanItem('${s.id}')" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-white transition-all" title="ลบรายการนี้">               <i data-lucide="trash-2" class="w-4 h-4"></i>             </button>           </div>         `).join('');       }        modal.classList.remove('hidden');       lucide.createIcons();     }      function closeHistoryModal() {       document.getElementById('historyModal').classList.add('hidden');     }      function deleteScanItem(scanId) {       if (confirm('คุณต้องการลบประวัติการตรวจนี้ใช่หรือไม่?')) {         let scans = getStoredScans();         scans = scans.filter(s => s.id !== scanId);         saveStoredScans(scans);         openHistoryModal();         updateAuthUI();       }     }      // ================= ADMIN DASHBOARD LOGIC =================     function openAdminModal() {       if (!currentUser || (currentUser.role !== 'admin' && !ADMIN_EMAILS.includes(currentUser.email.toLowerCase()))) {         alert('เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่เข้าถึงหน้านี้ได้');         return;       }        updateAdminStats();       renderAdminTable();       document.getElementById('adminModal').classList.remove('hidden');       lucide.createIcons();     }      function closeAdminModal() {       document.getElementById('adminModal').classList.add('hidden');     }      function updateAdminStats() {       const users = getStoredUsers();       const scans = getStoredScans();        document.getElementById('statTotalUsers').textContent = users.length;       document.getElementById('statTotalScans').textContent = scans.length;              const normalCount = scans.filter(s => s.conditionId === 'normal').length;       document.getElementById('statNormalScans').textContent = normalCount;       document.getElementById('statAbnormalScans').textContent = scans.length - normalCount;     }      function renderAdminTable() {       const searchQuery = (document.getElementById('adminSearchInput').value || '').toLowerCase();       const scans = getStoredScans();       const tbody = document.getElementById('adminScansTableBody');        const filtered = scans.filter(s =>          s.userName.toLowerCase().includes(searchQuery) ||         s.userEmail.toLowerCase().includes(searchQuery) ||         s.conditionTitle.toLowerCase().includes(searchQuery)       );        document.getElementById('adminTableCountText').textContent = `แสดง ${filtered.length} จาก ${scans.length} รายการ`;        if (filtered.length === 0) {         tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">ไม่พบข้อมูลที่ตรงกับการค้นหา</td></tr>`;         return;       }        tbody.innerHTML = filtered.map(s => `         <tr class="hover:bg-slate-50 transition-colors">           <td class="py-3 px-4 text-[11px] text-slate-500 whitespace-nowrap">${s.timestamp}</td>           <td class="py-3 px-4">             <div class="font-semibold text-slate-800">${s.userName}</div>             <div class="text-[10px] text-slate-400">${s.userEmail}</div>           </td>           <td class="py-3 px-4">             <span class="font-medium text-slate-700">${s.conditionTitle}</span>             <span class="inline-block ml-1 px-1.5 py-0.2 rounded text-[9px] font-bold ${s.severityClass}">${s.severity}</span>           </td>           <td class="py-3 px-4 text-center font-bold text-slate-700">${s.confidence}%</td>           <td class="py-3 px-4 text-center">             <img src="${s.previewImg}" class="w-8 h-8 rounded-lg object-cover mx-auto border border-slate-200 shadow-2xs">           </td>           <td class="py-3 px-4 text-right">             <button onclick="adminDeleteScan('${s.id}')" class="text-slate-400 hover:text-rose-600 p-1 rounded transition-all" title="ลบข้อมูล">               <i data-lucide="trash-2" class="w-4 h-4"></i>             </button>           </td>         </tr>       `).join('');        lucide.createIcons();     }      function adminDeleteScan(scanId) {       if (confirm('แอดมินยืนยันที่จะลบข้อมูลผลสแกนรายการนี้ใช่หรือไม่?')) {         let scans = getStoredScans();         scans = scans.filter(s => s.id !== scanId);         saveStoredScans(scans);         updateAdminStats();         renderAdminTable();         updateAuthUI();       }     }      function exportDataToCSV() {       const scans = getStoredScans();       if (scans.length === 0) {         alert('ไม่มีข้อมูลสำหรับส่งออก');         return;       }        let csv = 'ID,Timestamp,User_Name,User_Email,Condition,Confidence,Severity\n';       scans.forEach(s => {         csv += `"${s.id}","${s.timestamp}","${s.userName}","${s.userEmail}","${s.conditionTitle}","${s.confidence}%","${s.severity}"\n`;       });        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });       const url = URL.createObjectURL(blob);       const link = document.createElement("a");       link.setAttribute("href", url);       link.setAttribute("download", `optiscan_all_records_${Date.now()}.csv`);       document.body.appendChild(link);       link.click();       document.body.removeChild(link);     }      // Language Toggle Function     function setLanguage(lang) {       currentLang = lang;       document.documentElement.lang = lang;        const btnTh = document.getElementById('btnLangTh');       const btnEn = document.getElementById('btnLangEn');        if (lang === 'th') {         btnTh.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs";         btnEn.className = "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200";       } else {         btnEn.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs";         btnTh.className = "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200";       }        document.querySelectorAll('[data-i18n]').forEach(el => {         const key = el.getAttribute('data-i18n');         if (translations[lang] && translations[lang][key]) {           el.textContent = translations[lang][key];         }       });        const analyzeBtn = document.getElementById('btnAnalyze');       const analyzeBtnText = document.getElementById('analyzeBtnText');       if (analyzeBtn.hasAttribute('data-active')) {         analyzeBtnText.textContent = currentResultData ? translations[lang].btnReanalyze : translations[lang].btnAnalyze;       }        if (currentResultData) {         renderResultCard(currentResultData);       }     }      // ================= DOM ELEMENT REFERENCES =================     const dropZone = document.getElementById('dropZone');     const fileInput = document.getElementById('fileInput');     const uploadPrompt = document.getElementById('uploadPrompt');     const previewContainer = document.getElementById('previewContainer');     const imagePreview = document.getElementById('imagePreview');     const btnAnalyze = document.getElementById('btnAnalyze');     const analyzeBtnText = document.getElementById('analyzeBtnText');     const scanningOverlay = document.getElementById('scanningOverlay');     const resultSection = document.getElementById('resultSection');      // Initialize Lucide Icons     lucide.createIcons();      // ================= FILE UPLOAD & PREVIEW LOGIC =================     dropZone.addEventListener('click', (e) => {       if (previewContainer.classList.contains('hidden') || e.target === dropZone) {         fileInput.click();       }     });      ['dragenter', 'dragover'].forEach(eventName => {       dropZone.addEventListener(eventName, (e) => {         e.preventDefault();         e.stopPropagation();         dropZone.classList.add('border-medical-500', 'bg-medical-50/50');       }, false);     });      ['dragleave', 'drop'].forEach(eventName => {       dropZone.addEventListener(eventName, (e) => {         e.preventDefault();         e.stopPropagation();         dropZone.classList.remove('border-medical-500', 'bg-medical-50/50');       }, false);     });      dropZone.addEventListener('drop', (e) => {       const dt = e.dataTransfer;       const files = dt.files;       if (files && files.length > 0) {         handleFileSelection(files[0]);       }     });      fileInput.addEventListener('change', (e) => {       if (e.target.files && e.target.files.length > 0) {         handleFileSelection(e.target.files[0]);       }     });      function handleFileSelection(file) {       if (!file.type.match('image.*')) {         alert(translations[currentLang].invalidFile);         return;       }        currentFile = file;       const reader = new FileReader();        reader.onload = (e) => {         imagePreview.src = e.target.result;         uploadPrompt.classList.add('hidden');         previewContainer.classList.remove('hidden');                  btnAnalyze.disabled = false;         btnAnalyze.setAttribute('data-active', 'true');         analyzeBtnText.textContent = translations[currentLang].btnAnalyze;         resultSection.classList.add('hidden');         currentResultData = null;       };        reader.readAsDataURL(file);     }      function resetUploadedImage() {       currentFile = null;       currentResultData = null;       fileInput.value = '';       imagePreview.src = '#';       previewContainer.classList.add('hidden');       uploadPrompt.classList.remove('hidden');       btnAnalyze.disabled = true;       btnAnalyze.removeAttribute('data-active');       analyzeBtnText.textContent = translations[currentLang].btnAnalyze;       resultSection.classList.add('hidden');     }      // ================= AI PREDICTION / BACKEND INTEGRATION =================     btnAnalyze.addEventListener('click', async () => {       if (!currentFile) return;        btnAnalyze.disabled = true;       btnAnalyze.removeAttribute('data-active');       analyzeBtnText.textContent = translations[currentLang].btnScanning;       scanningOverlay.classList.remove('hidden');       resultSection.classList.add('hidden');        try {         await new Promise(resolve => setTimeout(resolve, 2000));          const hash = currentFile.name.length % conditionsData.length;         currentResultData = conditionsData[hash];          renderResultCard(currentResultData);         recordScanHistory(currentResultData, imagePreview.src);        } catch (err) {         alert("An error occurred during screening analysis: " + err.message);       } finally {         scanningOverlay.classList.add('hidden');         analyzeBtnText.textContent = translations[currentLang].btnReanalyze;         btnAnalyze.disabled = false;         btnAnalyze.setAttribute('data-active', 'true');       }     });      function renderResultCard(data) {       const langContent = data[currentLang];        document.getElementById('resultTitle').textContent = langContent.title;       document.getElementById('confidencePercentage').textContent = data.confidence.toFixed(1) + "%";       document.getElementById('resultDescription').textContent = langContent.description;       document.getElementById('resultAction').textContent = langContent.action;        const severityBadge = document.getElementById('severityBadge');       severityBadge.textContent = langContent.severity;       severityBadge.className = `inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${data.severityClass}`;        const iconWrapper = document.getElementById('resultIconWrapper');       iconWrapper.className = `w-10 h-10 rounded-xl flex items-center justify-center ${data.iconBg}`;              const resultIcon = document.getElementById('resultIcon');       resultIcon.setAttribute('data-lucide', data.icon);        const differentialContainer = document.getElementById('differentialList');       differentialContainer.innerHTML = '';       data.probabilities.forEach(p => {         const item = document.createElement('div');         item.className = "bg-white p-2.5 rounded-lg border border-slate-200 flex flex-col justify-between";         const diseaseName = langContent.diseaseLabels[p.key] || p.key;         item.innerHTML = `           <span class="text-slate-500 text-[10px] truncate" title="${diseaseName}">${diseaseName}</span>           <span class="font-bold text-slate-800 text-xs mt-0.5">${p.value.toFixed(1)}%</span>         `;         differentialContainer.appendChild(item);       });        const now = new Date();       document.getElementById('analysisTimestamp').textContent = `${translations[currentLang].screenedAt} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;        resultSection.classList.remove('hidden');        setTimeout(() => {         document.getElementById('confidenceBar').style.width = data.confidence + '%';       }, 100);        lucide.createIcons();     }      document.addEventListener('DOMContentLoaded', () => {       initAuth();     });   </script> </body> </html>
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OptiScan AI — Ocular Screening & Diagnostic AI</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            medical: {
+              50: '#F0F9FF',
+              100: '#E0F2FE',
+              200: '#BAE6FD',
+              300: '#7DD3FC',
+              400: '#38BDF8',
+              500: '#0EA5E9',
+              600: '#0284C7',
+              700: '#0369A1',
+              800: '#075985',
+              900: '#0C4A6E',
+            },
+            mint: {
+              50: '#ECFDF5',
+              100: '#D1FAE5',
+              500: '#10B981',
+              600: '#059669',
+            }
+          },
+          animation: {
+            'scan': 'scanLine 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+            'fadeIn': 'fadeIn 0.35s ease-out forwards',
+          },
+          keyframes: {
+            scanLine: {
+              '0%, 100%': { top: '0%' },
+              '50%': { top: '96%' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(8px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .scan-beam {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #38BDF8, #0284C7, #38BDF8, transparent);
+      box-shadow: 0 0 16px 3px rgba(56, 189, 248, 0.8), 0 0 30px 6px rgba(2, 132, 199, 0.4);
+      z-index: 20;
+    }
+    .medical-bg-pattern {
+      background-color: #F8FAFC;
+      background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="medical-bg-pattern min-h-screen text-slate-800 font-sans flex flex-col justify-between antialiased selection:bg-medical-100 selection:text-medical-800">
+
+  <!-- ================= HEADER / NAVBAR ================= -->
+  <header class="w-full bg-white/85 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 transition-all">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <!-- Logo + Brand -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-medical-600 to-medical-400 flex items-center justify-center text-white shadow-md shadow-medical-500/20">
+          <i data-lucide="scan-eye" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-lg text-slate-900 tracking-tight">OptiScan<span class="text-medical-600">AI</span></span>
+            <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-medical-50 text-medical-700 border border-medical-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-medical-500 mr-1.5 animate-pulse"></span>
+              v2.5 Clin-Grade
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 hidden sm:block -mt-0.5" data-i18n="appSubtitle">ระบบตรวจคัดกรองโรคทางสายตาด้วย AI</p>
+        </div>
+      </div>
+
+      <!-- Action Items: AI Badge + PWA Install + Language Toggle + Auth Buttons -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- AI Status Badge -->
+        <span class="hidden md:inline-flex items-center px-2.5 sm:px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+          <i data-lucide="activity" class="w-3.5 h-3.5 mr-1.5 text-emerald-500"></i>
+          <span data-i18n="badgeScreening">AI คัดกรองแม่นยำ</span>
+        </span>
+
+        <!-- Language Switcher Pill Button -->
+        <div class="inline-flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 shadow-inner">
+          <button 
+            type="button" 
+            id="btnLangTh" 
+            onclick="setLanguage('th')"
+            class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs"
+          >
+            🇹🇭 TH
+          </button>
+          <button 
+            type="button" 
+            id="btnLangEn" 
+            onclick="setLanguage('en')"
+            class="px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200"
+          >
+            🇺🇸 EN
+          </button>
+        </div>
+
+        <!-- Auth Navigation Dynamic Block -->
+        <div id="authNavArea" class="flex items-center space-x-2">
+          <!-- Logged Out View -->
+          <button 
+            id="btnOpenLogin" 
+            onclick="openAuthModal('login')"
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-medical-600 text-white hover:bg-medical-700 shadow-xs transition-all"
+          >
+            <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+            <span data-i18n="navLogin">เข้าสู่ระบบ</span>
+          </button>
+
+          <!-- Logged In View -->
+          <div id="userProfileNav" class="hidden items-center space-x-2">
+            <!-- User History Button -->
+            <button 
+              onclick="openHistoryModal()"
+              class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all border border-slate-200"
+              title="ประวัติการตรวจ"
+            >
+              <i data-lucide="history" class="w-3.5 h-3.5 text-medical-600"></i>
+              <span class="hidden sm:inline" data-i18n="navHistory">ประวัติ</span>
+              <span id="historyCountBadge" class="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] bg-medical-500 text-white font-bold">0</span>
+            </button>
+
+            <!-- Admin Panel Button -->
+            <button 
+              id="btnAdminNav"
+              onclick="openAdminModal()"
+              class="hidden items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-all shadow-xs"
+              title="แผงควบคุมผู้ดูแลระบบ"
+            >
+              <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+              <span class="hidden sm:inline">Admin</span>
+            </button>
+
+            <!-- User Avatar & Dropdown / Logout -->
+            <div class="relative group">
+              <button class="flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-all">
+                <img id="navUserAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" class="w-6 h-6 rounded-full border border-slate-300">
+                <span id="navUserName" class="text-xs font-medium text-slate-700 max-w-[80px] sm:max-w-[120px] truncate">User</span>
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+              </button>
+              <!-- Dropdown -->
+              <div class="absolute right-0 mt-1 w-44 bg-white rounded-xl shadow-lg border border-slate-100 py-1 hidden group-hover:block hover:block z-50">
+                <div class="px-3 py-1.5 border-b border-slate-100 text-[11px] text-slate-500 truncate" id="dropdownUserEmail">user@example.com</div>
+                <button onclick="openHistoryModal()" class="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2">
+                  <i data-lucide="file-clock" class="w-3.5 h-3.5 text-medical-600"></i>
+                  <span data-i18n="navHistory">ประวัติการตรวจ</span>
+                </button>
+                <button onclick="handleLogout()" class="w-full text-left px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2">
+                  <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                  <span data-i18n="navLogout">ออกจากระบบ</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main class="max-w-3xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col items-center">
+    
+    <!-- Hero Section -->
+    <div class="text-center max-w-xl mx-auto mb-8 sm:mb-10">
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-medical-50 text-medical-700 border border-medical-200 mb-3 shadow-xs">
+        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-medical-600"></i>
+        <span data-i18n="heroPill">ระบบตรวจจับภาพจอประสาทตาและดวงตาอัตโนมัติ</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight" data-i18n="heroTitle">
+        ตรวจคัดกรองโรคตาด้วย AI ทันที
+      </h1>
+      <p class="mt-2.5 text-sm sm:text-base text-slate-600 leading-relaxed" data-i18n="heroDesc">
+        อัปโหลดภาพถ่ายระยะใกล้ของดวงตา หรือภาพสแกนจอประสาทตา (Fundus) เพื่อวิเคราะห์ความผิดปกติเบื้องต้นได้ภายในไม่กี่วินาที
+      </p>
+    </div>
+
+    <!-- Main Card Container -->
+    <div class="w-full bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl shadow-slate-200/50 transition-all duration-300">
+      
+      <!-- Interactive Upload Drop Zone -->
+      <div 
+        id="dropZone" 
+        class="relative border-2 border-dashed border-slate-300 hover:border-medical-500 rounded-2xl p-6 sm:p-8 text-center transition-all duration-200 bg-slate-50/60 hover:bg-medical-50/30 cursor-pointer group flex flex-col items-center justify-center min-h-[290px] overflow-hidden"
+      >
+        <!-- Hidden File Input -->
+        <input 
+          type="file" 
+          id="fileInput" 
+          accept="image/*" 
+          capture="environment"
+          class="hidden" 
+        />
+
+        <!-- Empty State UI -->
+        <div id="uploadPrompt" class="flex flex-col items-center justify-center space-y-4">
+          <div class="w-16 h-16 rounded-2xl bg-white shadow-md border border-slate-200 flex items-center justify-center text-medical-600 group-hover:scale-105 group-hover:border-medical-300 transition-all duration-200">
+            <i data-lucide="upload-cloud" class="w-8 h-8"></i>
+          </div>
+          <div>
+            <p class="text-base font-semibold text-slate-800">
+              <span data-i18n="dropText">ลากไฟล์ภาพดวงตามาวางที่นี่ หรือ</span>
+              <span class="text-medical-600 font-bold underline decoration-medical-300 underline-offset-2" data-i18n="browseText">เลือกไฟล์</span>
+            </p>
+            <p class="text-xs text-slate-500 mt-1" data-i18n="supportText">รองรับไฟล์ภาพ JPG, PNG, DICOM ความละเอียดสูง (สูงสุด 15MB)</p>
+          </div>
+
+          <div class="flex items-center gap-2 pt-2">
+            <button 
+              type="button" 
+              onclick="event.stopPropagation(); document.getElementById('fileInput').click();"
+              class="inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold bg-white text-slate-700 border border-slate-300 shadow-xs hover:bg-slate-50 hover:text-medical-600 hover:border-medical-300 transition-all"
+            >
+              <i data-lucide="camera" class="w-4 h-4 mr-1.5 text-medical-600"></i>
+              <span data-i18n="btnTakeOrUpload">เพิ่มรูปภาพ / ถ่ายภาพด้วยกล้อง</span>
+            </button>
+          </div>
+
+          <!-- Quick Guidelines Pill -->
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-3 text-[11px] text-slate-500">
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipLight">แสงสว่างเพียงพอ</span></span>
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipFocus">ภาพคมชัด ไม่เบลอ</span></span>
+            <span class="inline-flex items-center"><i data-lucide="check" class="w-3 h-3 text-emerald-500 mr-1"></i> <span data-i18n="tipGlare">ไม่มีแสงสะท้อนจ้า</span></span>
+          </div>
+        </div>
+
+        <!-- Image Preview Container -->
+        <div id="previewContainer" class="hidden relative w-full flex-col items-center justify-center">
+          <div class="relative rounded-xl overflow-hidden max-h-80 shadow-md border border-slate-200">
+            <img id="imagePreview" src="#" alt="ภาพดวงตาพรีวิว" class="w-full object-contain rounded-xl max-h-80" />
+            
+            <!-- Scanning Animation Overlay -->
+            <div id="scanningOverlay" class="hidden absolute inset-0 bg-slate-900/40 backdrop-blur-[1.5px] flex flex-col items-center justify-center">
+              <div class="scan-beam animate-scan"></div>
+              <div class="bg-white/95 px-4 py-2.5 rounded-2xl shadow-xl flex items-center space-x-2.5 border border-medical-200/50">
+                <i data-lucide="loader-2" class="w-4 h-4 text-medical-600 animate-spin"></i>
+                <span class="text-xs font-semibold text-slate-700 tracking-wide" data-i18n="analyzingText">กำลังวิเคราะห์โครงสร้างกระจกตาและเส้นเลือดจอประสาทตา...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Remove Image Action -->
+          <button 
+            type="button" 
+            id="btnRemoveImage" 
+            onclick="event.stopPropagation(); resetUploadedImage();"
+            class="mt-3.5 inline-flex items-center text-xs font-medium text-slate-500 hover:text-rose-600 transition-colors"
+          >
+            <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i>
+            เปลี่ยนหรือนำภาพนี้ออก
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="mt-6 flex flex-col items-center">
+        <button 
+          type="button" 
+          id="btnAnalyze" 
+          disabled
+          class="w-full sm:w-auto min-w-[240px] px-8 py-3.5 rounded-2xl font-semibold text-sm transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed bg-medical-600 text-white hover:bg-medical-700 hover:shadow-medical-600/25 active:scale-[0.99]"
+        >
+          <i data-lucide="cpu" class="w-4 h-4"></i>
+          <span id="analyzeBtnText" data-i18n="btnAnalyze">เริ่มวิเคราะห์ภาพถ่าย</span>
+        </button>
+      </div>
+
+      <!-- Result Card -->
+      <div id="resultSection" class="hidden mt-8 pt-8 border-t border-slate-200 animate-fadeIn">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="clipboard-check" class="w-5 h-5 text-medical-600"></i>
+            <h3 class="font-bold text-base text-slate-900" data-i18n="resultSectionHeading">ผลการวิเคราะห์และคัดกรองเบื้องต้น</h3>
+          </div>
+          <span id="analysisTimestamp" class="text-[11px] text-slate-400"></span>
+        </div>
+
+        <!-- Outcome Card -->
+        <div class="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200/90 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/70">
+            <div class="flex items-start space-x-3.5">
+              <div id="resultIconWrapper" class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0">
+                <i id="resultIcon" data-lucide="check-circle" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="text-xs font-medium text-slate-500 block mb-0.5" data-i18n="detectedConditionLabel">สภาวะที่ตรวจพบ</span>
+                <h4 id="resultTitle" class="text-lg font-bold text-slate-900 leading-tight">ตาปกติ (Normal)</h4>
+                <div id="severityBadge" class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">ความเสี่ยงต่ำ</div>
+              </div>
+            </div>
+
+            <!-- Confidence Metric -->
+            <div class="text-left sm:text-right shrink-0 bg-white sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-slate-200">
+              <span class="text-xs font-medium text-slate-500 block mb-0.5" data-i18n="confidenceLabel">ระดับความมั่นใจของโมเดล</span>
+              <span id="confidencePercentage" class="text-2xl font-black text-slate-900">95.4%</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+            <div 
+              id="confidenceBar" 
+              class="h-2.5 rounded-full bg-medical-600 transition-all duration-1000 ease-out" 
+              style="width: 0%"
+            ></div>
+          </div>
+
+          <!-- Details & Recommendations -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">
+                <i data-lucide="book-open" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>
+                <span data-i18n="clinicalObservationHeading">ข้อสังเกตทางคลินิก</span>
+              </h4>
+              <p id="resultDescription" class="text-xs leading-relaxed text-slate-600">-</p>
+            </div>
+
+            <div class="bg-white rounded-xl p-4 border border-slate-200/80 shadow-xs">
+              <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center mb-1.5">
+                <i data-lucide="stethoscope" class="w-3.5 h-3.5 mr-1.5 text-medical-600"></i>
+                <span data-i18n="recommendedActionHeading">คำแนะนำเบื้องต้น</span>
+              </h4>
+              <p id="resultAction" class="text-xs leading-relaxed text-slate-600">-</p>
+            </div>
+          </div>
+
+          <!-- Differential Analysis Breakdown -->
+          <div class="pt-2">
+            <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider block mb-2" data-i18n="differentialHeading">ความน่าจะเป็นจำแนกตามประเภทโรค (Multiclass Probabilities)</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs" id="differentialList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= MEDICAL DISCLAIMER FOOTER ================= -->
+  <footer class="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-8 pt-4">
+    <div class="rounded-2xl bg-amber-50/90 border border-amber-200/80 p-4 flex items-start space-x-3 shadow-xs">
+      <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+      <div class="text-xs text-amber-900/90 leading-relaxed">
+        <strong class="font-semibold text-amber-950" data-i18n="disclaimerLabel">ข้อจำกัดความรับผิดชอบทางการแพทย์:</strong> 
+        <span data-i18n="disclaimerBody">
+          OptiScan AI ถูกออกแบบมาเพื่อการคัดกรองเบื้องต้นและการศึกษาเท่านั้น ระบบนี้ไม่สามารถใช้แทนการวินิจฉัย การตรวจรักษา หรือแผนการรักษาของจักษุแพทย์ผู้เชี่ยวชาญได้ หากท่านมีอาการปวดตาเฉียบพลัน ตาแดงผิดปกติ หรือสูญเสียการมองเห็น กรุณาพบแพทย์เฉพาะทางหรือเข้ารับการตรวจที่โรงพยาบาลทันที
+        </span>
+      </div>
+    </div>
+    <div class="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center gap-2">
+      <div class="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+        <i data-lucide="users" class="w-3.5 h-3.5 text-indigo-500"></i>
+        <span>คณะผู้จัดทำ</span>
+      </div>
+      <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
+        <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 border border-slate-200/80 text-slate-700 shadow-2xs font-medium">
+          นายศุภวิชญ์ จันทร์สุกรี
+        </span>
+        <span class="text-slate-300 hidden sm:inline">•</span>
+        <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 border border-slate-200/80 text-slate-700 shadow-2xs font-medium">
+          นายปภังกร กลิ่นมะละ
+        </span>
+        <span class="text-slate-300 hidden sm:inline">•</span>
+        <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 border border-slate-200/80 text-slate-700 shadow-2xs font-medium">
+          นายเตโชดม สงเคราะห์สุข
+        </span>
+      </div>
+    </div>
+    <p class="text-center text-[11px] text-slate-400 mt-4">
+      &copy; 2026 OptiScan AI Health Technologies. <span data-i18n="footerSub">ระบบทดสอบคัดกรองภาพถ่ายทางการแพทย์มาตรฐาน</span>
+    </p>
+  </footer>
+
+  <!-- ================= MODALS: AUTH / HISTORY / ADMIN ================= -->
+
+  <!-- 1. AUTH MODAL -->
+  <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative animate-fadeIn">
+      <button onclick="closeAuthModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-all">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 mx-auto rounded-2xl bg-medical-50 text-medical-600 flex items-center justify-center mb-3">
+          <i data-lucide="lock" class="w-6 h-6"></i>
+        </div>
+        <h3 id="authModalTitle" class="text-xl font-bold text-slate-900">เข้าสู่ระบบ OptiScan AI</h3>
+        <p id="authModalSubtitle" class="text-xs text-slate-500 mt-1">เข้าสู่ระบบเพื่อบันทึกและดูประวัติผลการตรวจสายตา</p>
+      </div>
+
+      <button 
+        type="button" 
+        onclick="handleGoogleAuth()"
+        class="w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs shadow-xs transition-all mb-4"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        <span>ดำเนินการต่อด้วยบัญชี Google</span>
+      </button>
+
+      <div class="relative flex items-center justify-center my-4">
+        <div class="border-t border-slate-200 w-full"></div>
+        <span class="bg-white px-2 text-[11px] text-slate-400 absolute">หรือใช้อีเมล</span>
+      </div>
+
+      <form id="authForm" onsubmit="handleEmailAuth(event)" class="space-y-3">
+        <div id="authNameField" class="hidden">
+          <label class="block text-xs font-semibold text-slate-700 mb-1">ชื่อ-นามสกุล</label>
+          <input type="text" id="authNameInput" placeholder="ระบุชื่อของคุณ" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">อีเมล</label>
+          <input type="email" id="authEmailInput" required placeholder="name@example.com" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">รหัสผ่าน</label>
+          <input type="password" id="authPassInput" required minlength="6" placeholder="รหัสผ่านอย่างน้อย 6 ตัวอักษร" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500">
+        </div>
+
+        <button 
+          type="submit" 
+          id="btnSubmitAuth"
+          class="w-full py-2.5 px-4 rounded-xl bg-medical-600 hover:bg-medical-700 text-white font-semibold text-xs shadow-md shadow-medical-500/20 transition-all mt-4"
+        >
+          เข้าสู่ระบบ
+        </button>
+      </form>
+
+      <div class="text-center mt-4 text-xs text-slate-500">
+        <span id="authToggleQuestion">ยังไม่มีบัญชีใช่หรือไม่?</span>
+        <button type="button" onclick="toggleAuthMode()" id="btnToggleAuthMode" class="text-medical-600 font-semibold hover:underline ml-1">
+          สมัครสมาชิกใหม่
+        </button>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-100 text-[10px] text-slate-400 text-center">
+        💡 สำหรับทดสอบ Admin: เข้าด้วย <b>admin@optiscan.ai</b> (รหัสผ่านใดก็ได้ 6 ตัวขึ้นไป)
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. USER HISTORY MODAL -->
+  <div id="historyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-slate-100 relative animate-fadeIn flex flex-col max-h-[85vh]">
+      <button onclick="closeHistoryModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-all">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-medical-50 text-medical-600 flex items-center justify-center">
+          <i data-lucide="file-clock" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">ประวัติการตรวจสุขภาพตาของฉัน</h3>
+          <p class="text-xs text-slate-500" id="historyUserSubtitle">บันทึกผลการคัดกรองเฉพาะบัญชีนี้</p>
+        </div>
+      </div>
+
+      <div id="historyListContainer" class="flex-1 overflow-y-auto space-y-3 pr-1"></div>
+    </div>
+  </div>
+
+  <!-- 3. ADMIN DASHBOARD MODAL -->
+  <div id="adminModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs hidden">
+    <div class="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative animate-fadeIn flex flex-col max-h-[90vh]">
+      <button onclick="closeAdminModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-100 transition-all">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+              แผงควบคุมผู้ดูแลระบบ (Admin Overview)
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">MASTER ADMIN</span>
+            </h3>
+            <p class="text-xs text-slate-500">ตรวจสอบและติดตามข้อมูลการสแกนและผู้ใช้ทั้งหมดในระบบ</p>
+          </div>
+        </div>
+        <button onclick="exportDataToCSV()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span>ส่งออก CSV</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+          <span class="text-[11px] font-semibold text-slate-400 block mb-1">ผู้ใช้ทั้งหมด</span>
+          <span id="statTotalUsers" class="text-2xl font-black text-slate-800">0</span>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+          <span class="text-[11px] font-semibold text-slate-400 block mb-1">การสแกนทั้งหมด</span>
+          <span id="statTotalScans" class="text-2xl font-black text-medical-600">0</span>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+          <span class="text-[11px] font-semibold text-slate-400 block mb-1">ผลปกติ (Healthy)</span>
+          <span id="statNormalScans" class="text-2xl font-black text-emerald-600">0</span>
+        </div>
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+          <span class="text-[11px] font-semibold text-slate-400 block mb-1">พบความผิดปกติ</span>
+          <span id="statAbnormalScans" class="text-2xl font-black text-amber-600">0</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between mb-3">
+        <div class="relative w-full max-w-xs">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+          <input 
+            type="text" 
+            id="adminSearchInput" 
+            oninput="renderAdminTable()" 
+            placeholder="ค้นหาชื่อ, อีเมล, ผลตรวจ..." 
+            class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-medical-500"
+          >
+        </div>
+        <span class="text-xs text-slate-400 ml-2" id="adminTableCountText">แสดง 0 รายการ</span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto border border-slate-200 rounded-2xl overflow-hidden">
+        <table class="w-full text-left text-xs text-slate-600">
+          <thead class="bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500 font-bold border-b border-slate-200 sticky top-0">
+            <tr>
+              <th class="py-3 px-4">วัน-เวลา</th>
+              <th class="py-3 px-4">ผู้ตรวจ (User)</th>
+              <th class="py-3 px-4">ผลการวินิจฉัย</th>
+              <th class="py-3 px-4 text-center">ความมั่นใจ</th>
+              <th class="py-3 px-4 text-center">รูปพรีวิว</th>
+              <th class="py-3 px-4 text-right">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="adminScansTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CLIENT APPLICATION LOGIC ================= -->
+  <script>
+    const translations = {
+      th: {
+        appSubtitle: "ระบบตรวจคัดกรองโรคทางสายตาด้วย AI",
+        badgeScreening: "AI คัดกรองแม่นยำ",
+        heroPill: "ระบบตรวจจับภาพจอประสาทตาและดวงตาอัตโนมัติ",
+        heroTitle: "ตรวจคัดกรองโรคตาด้วย AI ทันที",
+        heroDesc: "อัปโหลดภาพถ่ายระยะใกล้ของดวงตา หรือภาพสแกนจอประสาทตา (Fundus) เพื่อวิเคราะห์ความผิดปกติเบื้องต้นได้ภายในไม่กี่วินาที",
+        dropText: "ลากไฟล์ภาพดวงตามาวางที่นี่ หรือ",
+        browseText: "เลือกไฟล์",
+        supportText: "รองรับไฟล์ภาพ JPG, PNG, DICOM ความละเอียดสูง (สูงสุด 15MB)",
+        btnTakeOrUpload: "เพิ่มรูปภาพ / ถ่ายภาพด้วยกล้อง",
+        tipLight: "แสงสว่างเพียงพอ",
+        tipFocus: "ภาพคมชัด ไม่เบลอ",
+        tipGlare: "ไม่มีแสงสะท้อนจ้า",
+        analyzingText: "กำลังวิเคราะห์โครงสร้างกระจกตาและเส้นเลือดจอประสาทตา...",
+        btnAnalyze: "เริ่มวิเคราะห์ภาพถ่าย",
+        btnReanalyze: "วิเคราะห์ภาพใหม่อีกครั้ง",
+        btnScanning: "กำลังวิเคราะห์...",
+        resultSectionHeading: "ผลการวิเคราะห์และคัดกรองเบื้องต้น",
+        detectedConditionLabel: "สภาวะที่ตรวจพบ",
+        confidenceLabel: "ระดับความมั่นใจของโมเดล",
+        clinicalObservationHeading: "ข้อสังเกตทางคลินิก",
+        recommendedActionHeading: "คำแนะนำเบื้องต้น",
+        differentialHeading: "ความน่าจะเป็นจำแนกตามประเภทโรค (Multiclass Probabilities)",
+        disclaimerLabel: "ข้อจำกัดความรับผิดชอบทางการแพทย์:",
+        disclaimerBody: "OptiScan AI ถูกออกแบบมาเพื่อการคัดกรองเบื้องต้นและการศึกษาเท่านั้น ระบบนี้ไม่สามารถใช้แทนการวินิจฉัย การตรวจรักษา หรือแผนการรักษาของจักษุแพทย์ผู้เชี่ยวชาญได้ หากท่านมีอาการปวดตาเฉียบพลัน ตาแดงผิดปกติ หรือสูญเสียการมองเห็น กรุณาพบแพทย์เฉพาะทางหรือเข้ารับการตรวจที่โรงพยาบาลทันที",
+        footerSub: "ระบบทดสอบคัดกรองภาพถ่ายทางการแพทย์มาตรฐาน",
+        screenedAt: "เวลาที่ตรวจ:",
+        invalidFile: "กรุณาเลือกไฟล์ภาพที่ถูกต้อง (JPEG, PNG, WebP)",
+        navLogin: "เข้าสู่ระบบ",
+        navHistory: "ประวัติ",
+        navLogout: "ออกจากระบบ"
+      },
+      en: {
+        appSubtitle: "Ocular Deep-Learning Diagnostics",
+        badgeScreening: "AI-Assisted Screening",
+        heroPill: "Automated Computer Vision Screening",
+        heroTitle: "Instant AI Eye Screening",
+        heroDesc: "Upload a clear close-up photograph of the anterior eye or a fundus retinal scan to detect common pathologies within seconds.",
+        dropText: "Drag & drop your eye image here, or",
+        browseText: "browse",
+        supportText: "Supports high-res JPG, PNG, DICOM-exported formats (up to 15MB)",
+        btnTakeOrUpload: "Add Image / Take Photo",
+        tipLight: "Good Lighting",
+        tipFocus: "Sharp Focus",
+        tipGlare: "No Glare",
+        analyzingText: "Analyzing ocular features & retinal markers...",
+        btnAnalyze: "Analyze Image",
+        btnReanalyze: "Re-analyze Image",
+        btnScanning: "Scanning Image...",
+        resultSectionHeading: "Diagnostic Inference Result",
+        detectedConditionLabel: "Detected Classification",
+        confidenceLabel: "Model Confidence",
+        clinicalObservationHeading: "Clinical Observation",
+        recommendedActionHeading: "Recommended Action",
+        differentialHeading: "Differential Multiclass Probabilities",
+        disclaimerLabel: "Medical Disclaimer:",
+        disclaimerBody: "OptiScan AI is designed solely for informational, screening, and research purposes. This tool does not provide definitive medical diagnoses, clinical determinations, or treatment plans. If you experience vision loss, acute eye pain, sudden redness, or visual disturbances, consult a certified ophthalmologist or emergency care immediately.",
+        footerSub: "Compliant with synthetic medical imaging test standards.",
+        screenedAt: "Screened:",
+        invalidFile: "Please select a valid image file (JPEG, PNG, WebP).",
+        navLogin: "Sign In",
+        navHistory: "History",
+        navLogout: "Sign Out"
+      }
+    };
+
+    const conditionsData = [
+      {
+        id: "normal",
+        th: {
+          title: "ตาปกติ / สุขภาพดวงตาสมบูรณ์",
+          severity: "ความเสี่ยงต่ำมาก",
+          description: "ไม่พบการขุ่นมัวของเลนส์ตา ไม่พบรอยโรคบริเวณจุดรับภาพ (Macula) เส้นเลือดจอประสาทตามีการกระจายตัวที่สมบูรณ์เป็นปกติ",
+          action: "ควรตรวจสุขภาพตาเป็นประจำปีละ 1 ครั้ง และสวมแว่นกันแดดเมื่อต้องสัมผัสรังสี UV ต่อเนื่องเป็นเวลานาน",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Normal / Healthy Ocular Structure",
+          severity: "Low Risk",
+          description: "No signs of crystalline lens opacification, maculopathy, microaneurysms, or conjunctival inflammation detected. The corneal contour and retinal vasculature are clear and within physiological parameters.",
+          action: "Maintain regular annual ophthalmology wellness checkups. Ensure UV protection with sunglasses during outdoor exposure.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-emerald-100 text-emerald-800",
+        icon: "check-circle",
+        iconBg: "bg-emerald-100 text-emerald-600",
+        confidence: 96.2,
+        probabilities: [
+          { key: "normal", value: 96.2 },
+          { key: "cataract", value: 1.8 },
+          { key: "conjunctivitis", value: 1.2 },
+          { key: "retinopathy", value: 0.8 }
+        ]
+      },
+      {
+        id: "cataract",
+        th: {
+          title: "สงสัยภาวะต้อกระจก (Cataract)",
+          severity: "ความเสี่ยงปานกลาง",
+          description: "พบความขุ่นมัวและสูญเสียความโปร่งใสในบริเวณเลนส์แก้วตา ซึ่งอาจลดทอนการส่องผ่านของแสงไปยังจอประสาทตา ทำให้สายตามัว",
+          action: "แนะนำให้นัดหมายตรวจละเอียดด้วยเครื่อง Slit-lamp กับจักษุแพทย์ เพื่อประเมินระดับความขุ่นและวางแผนแนวทางการรักษา",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Suspected Cataract Formation",
+          severity: "Moderate Risk",
+          description: "Noticeable clouding and loss of transparency observed in the natural crystalline lens region, potentially affecting light transmission to the retina.",
+          action: "Schedule a comprehensive slit-lamp examination with an eye specialist to evaluate visual acuity degradation and surgical staging options.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-amber-100 text-amber-800",
+        icon: "alert-triangle",
+        iconBg: "bg-amber-100 text-amber-600",
+        confidence: 93.8,
+        probabilities: [
+          { key: "cataract", value: 93.8 },
+          { key: "normal", value: 3.4 },
+          { key: "retinopathy", value: 1.6 },
+          { key: "conjunctivitis", value: 1.2 }
+        ]
+      },
+      {
+        id: "conjunctivitis",
+        th: {
+          title: "เยื่อบุตาอักเสบ / ตาแดง (Conjunctivitis)",
+          severity: "ความเสี่ยงปานกลาง",
+          description: "พบการขยายตัวและคั่งของหลอดเลือดฝอยบริเวณเยื่อบุตาขาว สอดคล้องกับภาวะเยื่อบุตาอักเสบเฉียบพลัน (จากภูมิแพ้ เชื้อไวรัส หรือแบคทีเรีย)",
+          action: "งดการขยี้ตาและถอดคอนแทคเลนส์ทันที ควรปรึกษาแพทย์หรือเภสัชกรเพื่อรับยาหยอดตาต้านการอักเสบที่ถูกต้อง",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Conjunctival Hyperemia / Conjunctivitis",
+          severity: "Mild to Moderate",
+          description: "Superficial vascular engorgement and dilation of conjunctival microvessels detected. Features are consistent with acute conjunctivitis (allergic, viral, or bacterial).",
+          action: "Avoid rubbing eyes and contact lens wear. Consult an optometrist or physician for appropriate topical anti-inflammatory or antibacterial eyedrops.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-amber-100 text-amber-800",
+        icon: "alert-circle",
+        iconBg: "bg-amber-100 text-amber-600",
+        confidence: 91.5,
+        probabilities: [
+          { key: "conjunctivitis", value: 91.5 },
+          { key: "normal", value: 4.8 },
+          { key: "cataract", value: 2.1 },
+          { key: "retinopathy", value: 1.6 }
+        ]
+      },
+      {
+        id: "retinopathy",
+        th: {
+          title: "พบความผิดปกติที่อาจสัมพันธ์กับเบาหวานขึ้นจอประสาทตา (Diabetic Retinopathy)",
+          severity: "ความเสี่ยงสูง",
+          description: "ตรวจพบร่องรอยการเปลี่ยนแปลงของโครงสร้างเส้นเลือดจอประสาทตา เช่น หลอดเลือดโป่งพองขนาดเล็ก (Microaneurysms) หรือมีจุดเลือดออกกระจายตัว",
+          action: "ควรพบจักษุแพทย์เพื่อทำการขยายม่านตาตรวจจอประสาทตา (Dilated Eye Exam) อย่างละเอียดโดยเร็ว และควบคุมระดับน้ำตาลในเลือดอย่างเคร่งครัด",
+          diseaseLabels: { normal: "ดวงตาปกติ", cataract: "ต้อกระจก", conjunctivitis: "เยื่อบุตาอักเสบ", retinopathy: "เบาหวานขึ้นจอประสาทตา" }
+        },
+        en: {
+          title: "Signs of Diabetic Retinopathy",
+          severity: "Elevated Risk",
+          description: "Microvascular anomalies detected, including microaneurysms, blot hemorrhages, and potential hard exudates near the posterior pole of the retina.",
+          action: "Urgent dilated retinal examination and Optical Coherence Tomography (OCT) recommended. Coordinate with an endocrinologist for tight glycemic control.",
+          diseaseLabels: { normal: "Normal", cataract: "Cataract", conjunctivitis: "Conjunctivitis", retinopathy: "Retinopathy" }
+        },
+        severityClass: "bg-rose-100 text-rose-800",
+        icon: "activity",
+        iconBg: "bg-rose-100 text-rose-600",
+        confidence: 89.7,
+        probabilities: [
+          { key: "retinopathy", value: 89.7 },
+          { key: "normal", value: 5.3 },
+          { key: "cataract", value: 3.0 },
+          { key: "conjunctivitis", value: 2.0 }
+        ]
+      }
+    ];
+
+    let currentLang = 'th';
+    if (window.lucide) { lucide.createIcons(); }
+    let currentResultData = null;
+    let currentFile = null;
+
+    // ================= CLIENT-SIDE BACKEND & AUTH SYSTEM =================
+    const ADMIN_EMAILS = ['admin@optiscan.ai', 'jawidbhha@gmail.com'];
+
+    function getStoredUsers() {
+      const users = localStorage.getItem('optiscan_users');
+      return users ? JSON.parse(users) : [
+        { id: 'u_admin', name: 'Master Administrator', email: 'admin@optiscan.ai', role: 'admin', provider: 'email', createdAt: '2026-11-20T10:00:00Z' },
+        { id: 'u_demo', name: 'ทดสอบ ผู้ใช้งาน', email: 'user@example.com', role: 'user', provider: 'google', createdAt: '2026-11-22T08:30:00Z' }
+      ];
+    }
+
+    function saveStoredUsers(users) {
+      localStorage.setItem('optiscan_users', JSON.stringify(users));
+    }
+
+    function getStoredScans() {
+      const scans = localStorage.getItem('optiscan_scans');
+      return scans ? JSON.parse(scans) : [
+        {
+          id: 'scan_1',
+          userId: 'u_demo',
+          userName: 'ทดสอบ ผู้ใช้งาน',
+          userEmail: 'user@example.com',
+          conditionId: 'cataract',
+          conditionTitle: 'สงสัยภาวะต้อกระจก (Cataract)',
+          confidence: 93.8,
+          severity: 'ความเสี่ยงปานกลาง',
+          severityClass: 'bg-amber-100 text-amber-800',
+          timestamp: new Date(Date.now() - 86400000).toLocaleString('th-TH'),
+          previewImg: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=100&auto=format&fit=crop&q=60'
+        },
+        {
+          id: 'scan_2',
+          userId: 'u_demo',
+          userName: 'ทดสอบ ผู้ใช้งาน',
+          userEmail: 'user@example.com',
+          conditionId: 'normal',
+          conditionTitle: 'ตาปกติ / สุขภาพดวงตาสมบูรณ์',
+          confidence: 96.2,
+          severity: 'ความเสี่ยงต่ำมาก',
+          severityClass: 'bg-emerald-100 text-emerald-800',
+          timestamp: new Date(Date.now() - 3600000).toLocaleString('th-TH'),
+          previewImg: 'https://images.unsplash.com/photo-1514415008039-efa173293080?w=100&auto=format&fit=crop&q=60'
+        }
+      ];
+    }
+
+    function saveStoredScans(scans) {
+      localStorage.setItem('optiscan_scans', JSON.stringify(scans));
+    }
+
+    let currentUser = JSON.parse(localStorage.getItem('optiscan_session') || 'null');
+    let authMode = 'login';
+
+    function initAuth() {
+      updateAuthUI();
+    }
+
+    function updateAuthUI() {
+      const btnOpenLogin = document.getElementById('btnOpenLogin');
+      const userProfileNav = document.getElementById('userProfileNav');
+      const navUserName = document.getElementById('navUserName');
+      const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+      const navUserAvatar = document.getElementById('navUserAvatar');
+      const btnAdminNav = document.getElementById('btnAdminNav');
+      const historyCountBadge = document.getElementById('historyCountBadge');
+
+      if (currentUser) {
+        btnOpenLogin.classList.add('hidden');
+        userProfileNav.classList.remove('hidden');
+        userProfileNav.classList.add('flex');
+        navUserName.textContent = currentUser.name || currentUser.email.split('@')[0];
+        dropdownUserEmail.textContent = currentUser.email;
+        navUserAvatar.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(currentUser.name || currentUser.email)}`;
+
+        if (currentUser.role === 'admin' || ADMIN_EMAILS.includes(currentUser.email.toLowerCase())) {
+          btnAdminNav.classList.remove('hidden');
+          btnAdminNav.classList.add('inline-flex');
+        } else {
+          btnAdminNav.classList.add('hidden');
+          btnAdminNav.classList.remove('inline-flex');
+        }
+
+        const allScans = getStoredScans();
+        const myScans = allScans.filter(s => s.userId === currentUser.id || s.userEmail === currentUser.email);
+        historyCountBadge.textContent = myScans.length;
+      } else {
+        btnOpenLogin.classList.remove('hidden');
+        userProfileNav.classList.add('hidden');
+        userProfileNav.classList.remove('flex');
+        btnAdminNav.classList.add('hidden');
+        btnAdminNav.classList.remove('inline-flex');
+      }
+      lucide.createIcons();
+    }
+
+    function openAuthModal(mode = 'login') {
+      authMode = mode;
+      const modal = document.getElementById('authModal');
+      const title = document.getElementById('authModalTitle');
+      const subtitle = document.getElementById('authModalSubtitle');
+      const nameField = document.getElementById('authNameField');
+      const submitBtn = document.getElementById('btnSubmitAuth');
+      const toggleQuestion = document.getElementById('authToggleQuestion');
+      const toggleBtn = document.getElementById('btnToggleAuthMode');
+
+      if (mode === 'register') {
+        title.textContent = 'สมัครสมาชิกใหม่';
+        subtitle.textContent = 'สร้างบัญชีผู้ใช้งานเพื่อบันทึกประวัติการสแกนตา';
+        nameField.classList.remove('hidden');
+        submitBtn.textContent = 'สร้างบัญชีผู้ใช้';
+        toggleQuestion.textContent = 'มีบัญชีอยู่แล้วใช่ไหม?';
+        toggleBtn.textContent = 'เข้าสู่ระบบ';
+      } else {
+        title.textContent = 'เข้าสู่ระบบ OptiScan AI';
+        subtitle.textContent = 'เข้าสู่ระบบเพื่อบันทึกและดูประวัติผลการตรวจสายตา';
+        nameField.classList.add('hidden');
+        submitBtn.textContent = 'เข้าสู่ระบบ';
+        toggleQuestion.textContent = 'ยังไม่มีบัญชีใช่หรือไม่?';
+        toggleBtn.textContent = 'สมัครสมาชิกใหม่';
+      }
+
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+    }
+
+    function toggleAuthMode() {
+      openAuthModal(authMode === 'login' ? 'register' : 'login');
+    }
+
+    function handleGoogleAuth() {
+      const defaultEmail = prompt('เข้าสู่ระบบด้วย Google Account (ใส่อีเมลของคุณ):', 'user.google@gmail.com');
+      if (!defaultEmail) return;
+
+      const users = getStoredUsers();
+      let user = users.find(u => u.email.toLowerCase() === defaultEmail.toLowerCase());
+      if (!user) {
+        user = {
+          id: 'u_' + Date.now(),
+          name: defaultEmail.split('@')[0],
+          email: defaultEmail,
+          role: ADMIN_EMAILS.includes(defaultEmail.toLowerCase()) ? 'admin' : 'user',
+          provider: 'google',
+          createdAt: new Date().toISOString()
+        };
+        users.push(user);
+        saveStoredUsers(users);
+      }
+
+      currentUser = user;
+      localStorage.setItem('optiscan_session', JSON.stringify(currentUser));
+      closeAuthModal();
+      updateAuthUI();
+      alert(`ยินดีต้อนรับคุณ ${currentUser.name}! เข้าสู่ระบบสำเร็จแล้ว`);
+    }
+
+    function handleEmailAuth(event) {
+      event.preventDefault();
+      const email = document.getElementById('authEmailInput').value.trim();
+      const pass = document.getElementById('authPassInput').value;
+      const name = document.getElementById('authNameInput').value.trim();
+
+      const users = getStoredUsers();
+
+      if (authMode === 'register') {
+        const existing = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (existing) {
+          alert('อีเมลนี้ถูกลงทะเบียนไว้แล้ว กรุณาเข้าสู่ระบบ');
+          return;
+        }
+
+        const newUser = {
+          id: 'u_' + Date.now(),
+          name: name || email.split('@')[0],
+          email: email,
+          role: ADMIN_EMAILS.includes(email.toLowerCase()) ? 'admin' : 'user',
+          provider: 'email',
+          createdAt: new Date().toISOString()
+        };
+        users.push(newUser);
+        saveStoredUsers(users);
+        currentUser = newUser;
+      } else {
+        let user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+        if (!user) {
+          user = {
+            id: 'u_' + Date.now(),
+            name: email.split('@')[0],
+            email: email,
+            role: ADMIN_EMAILS.includes(email.toLowerCase()) ? 'admin' : 'user',
+            provider: 'email',
+            createdAt: new Date().toISOString()
+          };
+          users.push(user);
+          saveStoredUsers(users);
+        }
+        currentUser = user;
+      }
+
+      localStorage.setItem('optiscan_session', JSON.stringify(currentUser));
+      closeAuthModal();
+      updateAuthUI();
+      alert(`ยินดีต้อนรับ ${currentUser.name}! เข้าสู่ระบบเรียบร้อย`);
+    }
+
+    function handleLogout() {
+      if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+        currentUser = null;
+        localStorage.removeItem('optiscan_session');
+        updateAuthUI();
+      }
+    }
+
+    // ================= RECORD SCAN HISTORY =================
+    function recordScanHistory(resultData, previewUrl) {
+      const scans = getStoredScans();
+      const newScan = {
+        id: 'scan_' + Date.now(),
+        userId: currentUser ? currentUser.id : 'guest',
+        userName: currentUser ? currentUser.name : 'บุคคลทั่วไป (Guest)',
+        userEmail: currentUser ? currentUser.email : 'guest@device.local',
+        conditionId: resultData.id,
+        conditionTitle: resultData[currentLang].title,
+        confidence: resultData.confidence,
+        severity: resultData[currentLang].severity,
+        severityClass: resultData.severityClass,
+        timestamp: new Date().toLocaleString('th-TH'),
+        previewImg: previewUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=100&auto=format&fit=crop&q=60'
+      };
+
+      scans.unshift(newScan);
+      saveStoredScans(scans);
+      updateAuthUI();
+    }
+
+    // ================= USER HISTORY MODAL LOGIC =================
+    function openHistoryModal() {
+      if (!currentUser) {
+        openAuthModal('login');
+        return;
+      }
+
+      const modal = document.getElementById('historyModal');
+      const listContainer = document.getElementById('historyListContainer');
+      const subtitle = document.getElementById('historyUserSubtitle');
+      subtitle.textContent = `บันทึกผลการคัดกรองของ ${currentUser.name} (${currentUser.email})`;
+
+      const scans = getStoredScans().filter(s => s.userId === currentUser.id || s.userEmail === currentUser.email);
+
+      if (scans.length === 0) {
+        listContainer.innerHTML = `
+          <div class="text-center py-12 text-slate-400">
+            <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+            <p class="text-xs">ยังไม่มีประวัติการตรวจคัดกรอง</p>
+            <p class="text-[11px] text-slate-400 mt-1">ลองอัปโหลดภาพดวงตาเพื่อเริ่มสแกนผลครั้งแรกได้เลย</p>
+          </div>
+        `;
+      } else {
+        listContainer.innerHTML = scans.map(s => `
+          <div class="p-3.5 bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-200/80 transition-all flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <img src="${s.previewImg}" class="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-2xs">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-xs text-slate-800">${s.conditionTitle}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.severityClass}">${s.severity}</span>
+                </div>
+                <div class="text-[11px] text-slate-500 mt-0.5 flex items-center gap-2">
+                  <span>ความแม่นยำ: <b>${s.confidence}%</b></span>
+                  <span>•</span>
+                  <span><i data-lucide="calendar" class="w-3 h-3 inline mr-0.5"></i>${s.timestamp}</span>
+                </div>
+              </div>
+            </div>
+            <button onclick="deleteScanItem('${s.id}')" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-white transition-all" title="ลบรายการนี้">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `).join('');
+      }
+
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    function deleteScanItem(scanId) {
+      if (confirm('คุณต้องการลบประวัติการตรวจนี้ใช่หรือไม่?')) {
+        let scans = getStoredScans();
+        scans = scans.filter(s => s.id !== scanId);
+        saveStoredScans(scans);
+        openHistoryModal();
+        updateAuthUI();
+      }
+    }
+
+    // ================= ADMIN DASHBOARD LOGIC =================
+    function openAdminModal() {
+      if (!currentUser || (currentUser.role !== 'admin' && !ADMIN_EMAILS.includes(currentUser.email.toLowerCase()))) {
+        alert('เฉพาะผู้ดูแลระบบ (Admin) เท่านั้นที่เข้าถึงหน้านี้ได้');
+        return;
+      }
+
+      updateAdminStats();
+      renderAdminTable();
+      document.getElementById('adminModal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.add('hidden');
+    }
+
+    function updateAdminStats() {
+      const users = getStoredUsers();
+      const scans = getStoredScans();
+
+      document.getElementById('statTotalUsers').textContent = users.length;
+      document.getElementById('statTotalScans').textContent = scans.length;
+      
+      const normalCount = scans.filter(s => s.conditionId === 'normal').length;
+      document.getElementById('statNormalScans').textContent = normalCount;
+      document.getElementById('statAbnormalScans').textContent = scans.length - normalCount;
+    }
+
+    function renderAdminTable() {
+      const searchQuery = (document.getElementById('adminSearchInput').value || '').toLowerCase();
+      const scans = getStoredScans();
+      const tbody = document.getElementById('adminScansTableBody');
+
+      const filtered = scans.filter(s => 
+        s.userName.toLowerCase().includes(searchQuery) ||
+        s.userEmail.toLowerCase().includes(searchQuery) ||
+        s.conditionTitle.toLowerCase().includes(searchQuery)
+      );
+
+      document.getElementById('adminTableCountText').textContent = `แสดง ${filtered.length} จาก ${scans.length} รายการ`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">ไม่พบข้อมูลที่ตรงกับการค้นหา</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="py-3 px-4 text-[11px] text-slate-500 whitespace-nowrap">${s.timestamp}</td>
+          <td class="py-3 px-4">
+            <div class="font-semibold text-slate-800">${s.userName}</div>
+            <div class="text-[10px] text-slate-400">${s.userEmail}</div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="font-medium text-slate-700">${s.conditionTitle}</span>
+            <span class="inline-block ml-1 px-1.5 py-0.2 rounded text-[9px] font-bold ${s.severityClass}">${s.severity}</span>
+          </td>
+          <td class="py-3 px-4 text-center font-bold text-slate-700">${s.confidence}%</td>
+          <td class="py-3 px-4 text-center">
+            <img src="${s.previewImg}" class="w-8 h-8 rounded-lg object-cover mx-auto border border-slate-200 shadow-2xs">
+          </td>
+          <td class="py-3 px-4 text-right">
+            <button onclick="adminDeleteScan('${s.id}')" class="text-slate-400 hover:text-rose-600 p-1 rounded transition-all" title="ลบข้อมูล">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function adminDeleteScan(scanId) {
+      if (confirm('แอดมินยืนยันที่จะลบข้อมูลผลสแกนรายการนี้ใช่หรือไม่?')) {
+        let scans = getStoredScans();
+        scans = scans.filter(s => s.id !== scanId);
+        saveStoredScans(scans);
+        updateAdminStats();
+        renderAdminTable();
+        updateAuthUI();
+      }
+    }
+
+    function exportDataToCSV() {
+      const scans = getStoredScans();
+      if (scans.length === 0) {
+        alert('ไม่มีข้อมูลสำหรับส่งออก');
+        return;
+      }
+
+      let csv = 'ID,Timestamp,User_Name,User_Email,Condition,Confidence,Severity\n';
+      scans.forEach(s => {
+        csv += `"${s.id}","${s.timestamp}","${s.userName}","${s.userEmail}","${s.conditionTitle}","${s.confidence}%","${s.severity}"\n`;
+      });
+
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `optiscan_all_records_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Language Toggle Function
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.documentElement.lang = lang;
+
+      const btnTh = document.getElementById('btnLangTh');
+      const btnEn = document.getElementById('btnLangEn');
+
+      if (lang === 'th') {
+        btnTh.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs";
+        btnEn.className = "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200";
+      } else {
+        btnEn.className = "px-2.5 py-1 text-xs font-semibold rounded-lg transition-all duration-200 bg-white text-medical-700 shadow-xs";
+        btnTh.className = "px-2.5 py-1 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 transition-all duration-200";
+      }
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+
+      const analyzeBtn = document.getElementById('btnAnalyze');
+      const analyzeBtnText = document.getElementById('analyzeBtnText');
+      if (analyzeBtn.hasAttribute('data-active')) {
+        analyzeBtnText.textContent = currentResultData ? translations[lang].btnReanalyze : translations[lang].btnAnalyze;
+      }
+
+      if (currentResultData) {
+        renderResultCard(currentResultData);
+      }
+    }
+
+    // ================= DOM ELEMENT REFERENCES =================
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const uploadPrompt = document.getElementById('uploadPrompt');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const btnAnalyze = document.getElementById('btnAnalyze');
+    const analyzeBtnText = document.getElementById('analyzeBtnText');
+    const scanningOverlay = document.getElementById('scanningOverlay');
+    const resultSection = document.getElementById('resultSection');
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // ================= FILE UPLOAD & PREVIEW LOGIC =================
+    dropZone.addEventListener('click', (e) => {
+      if (previewContainer.classList.contains('hidden') || e.target === dropZone) {
+        fileInput.click();
+      }
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.add('border-medical-500', 'bg-medical-50/50');
+      }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('border-medical-500', 'bg-medical-50/50');
+      }, false);
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      if (files && files.length > 0) {
+        handleFileSelection(files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleFileSelection(e.target.files[0]);
+      }
+    });
+
+    function handleFileSelection(file) {
+      if (!file.type.match('image.*')) {
+        alert(translations[currentLang].invalidFile);
+        return;
+      }
+
+      currentFile = file;
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        uploadPrompt.classList.add('hidden');
+        previewContainer.classList.remove('hidden');
+        
+        btnAnalyze.disabled = false;
+        btnAnalyze.setAttribute('data-active', 'true');
+        analyzeBtnText.textContent = translations[currentLang].btnAnalyze;
+        resultSection.classList.add('hidden');
+        currentResultData = null;
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function resetUploadedImage() {
+      currentFile = null;
+      currentResultData = null;
+      fileInput.value = '';
+      imagePreview.src = '#';
+      previewContainer.classList.add('hidden');
+      uploadPrompt.classList.remove('hidden');
+      btnAnalyze.disabled = true;
+      btnAnalyze.removeAttribute('data-active');
+      analyzeBtnText.textContent = translations[currentLang].btnAnalyze;
+      resultSection.classList.add('hidden');
+    }
+
+    // ================= AI PREDICTION / BACKEND INTEGRATION =================
+    btnAnalyze.addEventListener('click', async () => {
+      if (!currentFile) return;
+
+      btnAnalyze.disabled = true;
+      btnAnalyze.removeAttribute('data-active');
+      analyzeBtnText.textContent = translations[currentLang].btnScanning;
+      scanningOverlay.classList.remove('hidden');
+      resultSection.classList.add('hidden');
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const hash = currentFile.name.length % conditionsData.length;
+        currentResultData = conditionsData[hash];
+
+        renderResultCard(currentResultData);
+        recordScanHistory(currentResultData, imagePreview.src);
+
+      } catch (err) {
+        alert("An error occurred during screening analysis: " + err.message);
+      } finally {
+        scanningOverlay.classList.add('hidden');
+        analyzeBtnText.textContent = translations[currentLang].btnReanalyze;
+        btnAnalyze.disabled = false;
+        btnAnalyze.setAttribute('data-active', 'true');
+      }
+    });
+
+    function renderResultCard(data) {
+      const langContent = data[currentLang];
+
+      document.getElementById('resultTitle').textContent = langContent.title;
+      document.getElementById('confidencePercentage').textContent = data.confidence.toFixed(1) + "%";
+      document.getElementById('resultDescription').textContent = langContent.description;
+      document.getElementById('resultAction').textContent = langContent.action;
+
+      const severityBadge = document.getElementById('severityBadge');
+      severityBadge.textContent = langContent.severity;
+      severityBadge.className = `inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${data.severityClass}`;
+
+      const iconWrapper = document.getElementById('resultIconWrapper');
+      iconWrapper.className = `w-10 h-10 rounded-xl flex items-center justify-center ${data.iconBg}`;
+      
+      const resultIcon = document.getElementById('resultIcon');
+      resultIcon.setAttribute('data-lucide', data.icon);
+
+      const differentialContainer = document.getElementById('differentialList');
+      differentialContainer.innerHTML = '';
+      data.probabilities.forEach(p => {
+        const item = document.createElement('div');
+        item.className = "bg-white p-2.5 rounded-lg border border-slate-200 flex flex-col justify-between";
+        const diseaseName = langContent.diseaseLabels[p.key] || p.key;
+        item.innerHTML = `
+          <span class="text-slate-500 text-[10px] truncate" title="${diseaseName}">${diseaseName}</span>
+          <span class="font-bold text-slate-800 text-xs mt-0.5">${p.value.toFixed(1)}%</span>
+        `;
+        differentialContainer.appendChild(item);
+      });
+
+      const now = new Date();
+      document.getElementById('analysisTimestamp').textContent = `${translations[currentLang].screenedAt} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+      resultSection.classList.remove('hidden');
+
+      setTimeout(() => {
+        document.getElementById('confidenceBar').style.width = data.confidence + '%';
+      }, 100);
+
+      lucide.createIcons();
+    }
+
+    
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.log('SW registration note:', err);
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { initAuth(); if (window.lucide) { lucide.createIcons(); } });
+  </script>
+</body>
+</html>
