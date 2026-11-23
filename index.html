@@ -970,7 +970,7 @@
     }
 
     // ================= RECORD SCAN HISTORY =================
-    function recordScanHistory(resultData, previewUrl) {
+    async function recordScanHistory(resultData, previewUrl) {
       const scans = getStoredScans();
       const newScan = {
         id: 'scan_' + Date.now(),
@@ -989,6 +989,26 @@
       scans.unshift(newScan);
       saveStoredScans(scans);
       updateAuthUI();
+
+      // Cloud Database Sync (Supabase)
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('scan_history').insert([
+            {
+              user_id: newScan.userId,
+              user_name: newScan.userName,
+              user_email: newScan.userEmail,
+              condition_title: newScan.conditionTitle,
+              confidence: newScan.confidence,
+              severity: newScan.severity,
+              created_at: new Date().toISOString()
+            }
+          ]);
+          console.log("Successfully synced scan history to Supabase Cloud Database!");
+        } catch (dbErr) {
+          console.log("Supabase sync notice:", dbErr);
+        }
+      }
     }
 
     // ================= USER HISTORY MODAL LOGIC =================
@@ -1284,7 +1304,21 @@
     }
 
         // ================= REAL AI VISION ENGINE (GEMINI 3.5 FLASH) =================
-        function getVisionSecret() {
+            // ================= SUPABASE CLOUD DATABASE CONFIGURATION =================
+    const SUPABASE_URL = "https://kipxycqvfqlhxolstlvx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpcHh5Y3F2ZnFsaHhvbHN0bHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0NTkyOTIsImV4cCI6MjExMTAzNTI5Mn0.DbO-FKkDrVnCFTwzU8ccXBCjI7ipt67zLg6chMxhFEU";
+
+    let supabaseClient = null;
+    if (window.supabase) {
+      try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log("Connected to Supabase Cloud Database successfully!");
+      } catch (e) {
+        console.warn("Supabase init error:", e);
+      }
+    }
+
+    function getVisionSecret() {
       const b64 = "QVEuQWI4Uk42S2pCcjBEeUJMM1pYTG03ai0yYXVQYlcxazg3SWVPallORG5rRmxuRFdYQ3c=";
       return atob(b64);
     }
