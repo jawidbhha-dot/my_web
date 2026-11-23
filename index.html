@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>OptiScan AI — Ocular Screening & Diagnostic AI</title>
   
   <!-- PWA Metadata & Mobile App Tags -->
@@ -10,7 +10,7 @@
   <meta name="theme-color" content="#0284C7">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="OptiScan AI">
   <link rel="apple-touch-icon" href="https://api.iconify.design/lucide:scan-eye.svg?color=%230284C7&width=192&height=192">
   
@@ -71,6 +71,34 @@
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
+    /* ===== NATIVE APP-LIKE MOBILE BEHAVIOR ===== */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    html, body {
+      touch-action: manipulation;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    /* Allow text selection only inside result cards */
+    #resultSection, #resultSection * {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    input, textarea, button {
+      touch-action: manipulation;
+    }
+    /* Safe area padding for notch devices (iPhone X+) */
+    body {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
     /* Laser Scanner Beam Effect */
     .scan-beam {
       position: absolute;
